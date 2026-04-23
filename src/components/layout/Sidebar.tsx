@@ -4,6 +4,7 @@ import {
   CreditCard,
   BarChart3,
   Compass,
+  X,
 } from 'lucide-react';
 
 const navItems = [
@@ -13,75 +14,104 @@ const navItems = [
   { to: '/discover', icon: Compass, label: 'Discover' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   return (
-    <aside
-      style={{ backgroundColor: '#161b27', borderRight: '1px solid #252d42' }}
-      className="w-60 flex-shrink-0 flex flex-col h-full"
-    >
-      <div className="flex items-center gap-2.5 px-6 py-5" style={{ borderBottom: '1px solid #252d42' }}>
+    <>
+      {/* Mobile overlay */}
+      {mobileOpen && (
         <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold"
-          style={{ backgroundColor: '#00d4aa', color: '#0f1117' }}
-        >
-          A
-        </div>
-        <span className="text-base font-semibold tracking-tight" style={{ color: '#e8eaf0' }}>
-          Audify
-        </span>
-      </div>
+          className="fixed inset-0 z-30 bg-black/60 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
 
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {navItems.map(({ to, icon: Icon, label }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                isActive
-                  ? 'text-teal bg-teal-dim'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover'
-              }`
-            }
-            style={({ isActive }) =>
-              isActive
-                ? { color: '#00d4aa', backgroundColor: 'rgba(0,212,170,0.12)' }
-                : {}
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <Icon
-                  size={17}
-                  style={{ color: isActive ? '#00d4aa' : undefined }}
-                  strokeWidth={isActive ? 2.2 : 1.8}
-                />
-                {label}
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="px-4 py-4" style={{ borderTop: '1px solid #252d42' }}>
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #00d4aa 0%, #0099cc 100%)', color: '#0f1117' }}
-          >
-            JD
+      <aside
+        role="navigation"
+        aria-label="Main navigation"
+        className={[
+          'flex flex-col h-full w-60 flex-shrink-0 z-40',
+          'bg-bg-secondary border-r border-border',
+          /* mobile: slide in/out */
+          'fixed top-0 left-0 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+        ].join(' ')}
+      >
+        {/* Logo */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-teal text-bg-primary select-none"
+              aria-hidden="true"
+            >
+              A
+            </div>
+            <span className="text-base font-semibold tracking-tight text-text-primary">
+              Audify
+            </span>
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium truncate" style={{ color: '#e8eaf0' }}>
-              Jamie Doe
-            </p>
-            <p className="text-xs truncate" style={{ color: '#8892a4' }}>
-              jamie@example.com
-            </p>
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover"
+            aria-label="Close navigation"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              onClick={onClose}
+              className={({ isActive }) =>
+                [
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium',
+                  isActive
+                    ? 'nav-link-active'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover',
+                ].join(' ')
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon
+                    size={17}
+                    strokeWidth={isActive ? 2.2 : 1.8}
+                    className={isActive ? 'text-teal' : 'text-text-secondary'}
+                    aria-hidden="true"
+                  />
+                  {label}
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* User profile */}
+        <div className="px-4 py-4 border-t border-border flex-shrink-0">
+          <div className="flex items-center gap-3 px-2 py-2 rounded-lg">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 bg-gradient-to-br from-teal to-cyan text-bg-primary select-none"
+              aria-hidden="true"
+            >
+              JD
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate text-text-primary">Jamie Doe</p>
+              <p className="text-xs truncate text-text-secondary">jamie@example.com</p>
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

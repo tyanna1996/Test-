@@ -3,27 +3,55 @@
 @import "tailwindcss";
 
 @theme {
+  /* Backgrounds */
   --color-bg-primary: #0f1117;
   --color-bg-secondary: #161b27;
   --color-bg-card: #1a2035;
   --color-bg-hover: #1e2640;
+  --color-bg-elevated: #212840;
+
+  /* Borders */
   --color-border: #252d42;
+  --color-border-subtle: #1e2640;
+
+  /* Brand — teal */
   --color-teal: #00d4aa;
-  --color-teal-dim: rgba(0, 212, 170, 0.15);
   --color-teal-hover: #00bfa0;
+  --color-teal-dim: #00d4aa1a;
+  --color-teal-dim-hover: #00d4aa26;
+
+  /* Text */
   --color-text-primary: #e8eaf0;
   --color-text-secondary: #8892a4;
   --color-text-muted: #4a5568;
+
+  /* Semantic — status / accent colours */
   --color-amber: #f59e0b;
+  --color-amber-dim: #f59e0b1a;
   --color-danger: #ef4444;
+  --color-danger-dim: #ef44441a;
   --color-green: #22c55e;
+  --color-green-dim: #22c55e1a;
+  --color-purple: #8b5cf6;
+  --color-purple-dim: #8b5cf61a;
+  --color-blue: #3b82f6;
+  --color-blue-dim: #3b82f61a;
+  --color-cyan: #06b6d4;
+  --color-orange: #f97316;
+
+  /* Service accent colours */
+  --color-audible: #f59e0b;
+  --color-storytel: #8b5cf6;
+  --color-podimo: #ef4444;
+  --color-spotify: #22c55e;
+
+  /* Typography */
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ── Base reset ───────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root {
   height: 100%;
@@ -32,26 +60,53 @@ html, body, #root {
 }
 
 body {
-  background-color: #0f1117;
-  color: #e8eaf0;
-  font-family: 'DM Sans', sans-serif;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ── Scrollbar ────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-bg-elevated); }
+
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--color-border) var(--color-bg-primary); }
+
+/* ── Typography helpers ───────────────────── */
+.font-mono { font-family: var(--font-mono) !important; }
+
+/* ── Utility: card surface ────────────────── */
+.card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
 }
 
-::-webkit-scrollbar-track {
-  background: #0f1117;
+/* ── Sidebar nav link active state ───────── */
+.nav-link-active {
+  color: var(--color-teal) !important;
+  background-color: var(--color-teal-dim) !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #252d42;
-  border-radius: 3px;
+/* ── Recharts text override ───────────────── */
+.recharts-cartesian-axis-tick text {
+  fill: var(--color-text-secondary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #2e3a50;
+/* ── Focus ring ───────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-teal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Smooth transitions on interactive elements */
+button, a, [role="button"] {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
