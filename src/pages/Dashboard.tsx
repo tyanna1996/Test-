@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DollarSign, Clock, Layers, AlertTriangle, TrendingUp } from 'lucide-react';
+import { DollarSign, Clock, Layers, AlertTriangle, Calendar } from 'lucide-react';
 import {
   AreaChart, Area,
   BarChart, Bar, Cell,
@@ -9,10 +9,11 @@ import {
 } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 import { services, monthlySpendData } from '../data/services';
+import type { Service } from '../types';
 import ServiceLogo from '../components/ui/ServiceLogo';
 import StatusBadge from '../components/ui/StatusBadge';
 
-/* ── Shared chart tooltip ─────────────────────────────── */
+/* ── Chart tooltip ────────────────────────────────────── */
 function ChartTooltip({
   active, payload, label, prefix = '', suffix = '',
 }: {
@@ -32,19 +33,12 @@ function ChartTooltip({
 
 /* ── Stat card ────────────────────────────────────────── */
 function StatCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  iconClass = 'text-teal',
-  iconBg = 'bg-teal-dim',
+  icon: Icon, label, value, sub,
+  iconClass = 'text-teal', iconBg = 'bg-teal-dim',
 }: {
   icon: React.ElementType;
-  label: string;
-  value: string;
-  sub?: string;
-  iconClass?: string;
-  iconBg?: string;
+  label: string; value: string; sub?: string;
+  iconClass?: string; iconBg?: string;
 }) {
   return (
     <div className="card p-5 flex flex-col gap-3">
@@ -65,9 +59,13 @@ function StatCard({
 }
 
 /* ── Chart card wrapper ───────────────────────────────── */
-function ChartCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+function ChartCard({
+  title, sub, children, className = '',
+}: {
+  title: string; sub?: string; children: React.ReactNode; className?: string;
+}) {
   return (
-    <div className="card p-5">
+    <div className={`card p-5 ${className}`}>
       <div className="mb-5">
         <h2 className="text-sm font-semibold text-text-primary">{title}</h2>
         {sub && <p className="text-xs mt-0.5 text-text-secondary">{sub}</p>}
@@ -77,18 +75,233 @@ function ChartCard({ title, sub, children }: { title: string; sub?: string; chil
   );
 }
 
-/* ── Dashboard ────────────────────────────────────────── */
+/* ── Connected-service card ───────────────────────────── */
+function ServiceGridCard({ service, onClick }: { service: Service; onClick: () => void }) {
+  const billingLabel = new Date(service.nextBillingDate + 'T00:00:00')
+    .toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <button
+      onClick={onClick}
+      className="card p-4 flex flex-col gap-3 hover:bg-bg-hover transition-colors text-left w-full group"
+      aria-label={`${service.name} — ${service.status}`}
+    >
+      <div className="flex items-start justify-between">
+        <ServiceLogo id={service.id} name={service.name} logoChar={service.logoChar} size="md" />
+        <StatusBadge status={service.status} />
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-text-primary group-hover:text-teal transition-colors">
+          {service.name}
+        </h3>
+        <p className="text-xs mt-0.5 text-text-secondary truncate">{service.plan}</p>
+      </div>
+      <div className="pt-3 border-t border-border flex items-end justify-between">
+        <div>
+          <p className="text-xs text-text-muted">Next billing</p>
+          <p className="text-xs font-mono text-text-secondary mt-0.5">{billingLabel}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-lg font-semibold font-mono text-text-primary leading-none">
+            ${service.monthlyCost.toFixed(2)}
+          </p>
+          <p className="text-xs text-text-muted mt-0.5">/month</p>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/* ── Renewal timeline ─────────────────────────────────── */
+function RenewalTimeline() {
+  const TODAY = new Date('2026-04-23T00:00:00');
+  const WINDOW = 30;
+  const TRACK_TOP = 68;
+
+  const events = useMemo(() => {
+    const sorted = services
+      .filter((s) => s.status !== 'inactive')
+      .map((s) => {
+        const date = new Date(s.nextBillingDate + 'T00:00:00');
+        const days = Math.round((date.getTime() - TODAY.getTime()) / 86400000);
+        const pct = Math.min(96, Math.max(4, (days / WINDOW) * 100));
+        return { ...s, days, pct };
+      })
+      .filter((e) => e.days >= 0 && e.days <= WINDOW)
+      .sort((a, b) => a.days - b.days);
+    return sorted.map((e, i) => ({ ...e, above: i % 2 === 0 }));
+  }, []);
+
+  const fmtDate = (s: string) =>
+    new Date(s + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+  return (
+    <div className="card p-5 pb-6">
+      <h2 className="text-sm font-semibold text-text-primary">Renewal Timeline</h2>
+      <p className="text-xs mt-0.5 text-text-secondary mb-6">
+        Upcoming billing dates — next 30 days
+      </p>
+
+      <div className="overflow-x-auto">
+        <div style={{ position: 'relative', height: 156, minWidth: 320 }}>
+
+          {/* Labels ABOVE track */}
+          {events.filter((e) => e.above).map((e) => (
+            <div
+              key={e.id}
+              style={{
+                position: 'absolute',
+                left: `${e.pct}%`,
+                top: 4,
+                transform: 'translateX(-50%)',
+              }}
+              className="flex flex-col items-center"
+            >
+              <p className="text-xs font-semibold text-text-primary whitespace-nowrap leading-tight">
+                {e.name}
+              </p>
+              <p
+                className="text-xs font-mono whitespace-nowrap leading-tight"
+                style={{ color: e.accentColor }}
+              >
+                ${e.monthlyCost}
+              </p>
+              <p className="text-xs text-text-muted whitespace-nowrap leading-tight mt-0.5">
+                {fmtDate(e.nextBillingDate)}
+              </p>
+              {/* connector */}
+              <div
+                style={{
+                  width: 1,
+                  height: 14,
+                  backgroundColor: e.accentColor,
+                  opacity: 0.45,
+                  marginTop: 4,
+                }}
+              />
+            </div>
+          ))}
+
+          {/* Track */}
+          <div
+            style={{ position: 'absolute', left: 0, right: 0, top: TRACK_TOP, height: 2 }}
+            className="bg-border rounded-full"
+          >
+            {/* Today marker */}
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: -10,
+                width: 2,
+                height: 22,
+                borderRadius: 2,
+              }}
+              className="bg-teal"
+            />
+
+            {/* Event dots */}
+            {events.map((e) => (
+              <div
+                key={e.id}
+                style={{
+                  position: 'absolute',
+                  left: `${e.pct}%`,
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: '50%',
+                    backgroundColor: e.accentColor,
+                  }}
+                  className="ring-2 ring-bg-card"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Labels BELOW track */}
+          {events.filter((e) => !e.above).map((e) => (
+            <div
+              key={e.id}
+              style={{
+                position: 'absolute',
+                left: `${e.pct}%`,
+                top: TRACK_TOP + 14,
+                transform: 'translateX(-50%)',
+              }}
+              className="flex flex-col items-center"
+            >
+              {/* connector */}
+              <div
+                style={{
+                  width: 1,
+                  height: 12,
+                  backgroundColor: e.accentColor,
+                  opacity: 0.45,
+                  marginBottom: 4,
+                }}
+              />
+              <p className="text-xs font-semibold text-text-primary whitespace-nowrap leading-tight">
+                {e.name}
+              </p>
+              <p
+                className="text-xs font-mono whitespace-nowrap leading-tight"
+                style={{ color: e.accentColor }}
+              >
+                ${e.monthlyCost}
+              </p>
+              <p className="text-xs text-text-muted whitespace-nowrap leading-tight mt-0.5">
+                {fmtDate(e.nextBillingDate)}
+              </p>
+            </div>
+          ))}
+
+          {/* Window labels */}
+          <div style={{ position: 'absolute', left: 0, bottom: 0 }}>
+            <p className="text-xs text-text-muted flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-teal inline-block" aria-hidden="true" />
+              Today · Apr 23
+            </p>
+          </div>
+          <div style={{ position: 'absolute', right: 0, bottom: 0 }}>
+            <p className="text-xs text-text-muted">May 23</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Dashboard page ───────────────────────────────────── */
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const { totalMonthly, totalHours, activeCount, trialService } = useMemo(() => ({
-    totalMonthly: services
-      .filter((s) => s.status !== 'inactive')
-      .reduce((sum, s) => sum + s.monthlyCost, 0),
-    totalHours: services.reduce((sum, s) => sum + s.weeklyUsageHours, 0),
-    activeCount: services.filter((s) => s.status === 'active' || s.status === 'trial').length,
-    trialService: services.find((s) => s.status === 'trial'),
-  }), []);
+  const { totalMonthly, totalMonthlyHours, activeCount, upcomingCount, trialService } =
+    useMemo(() => {
+      const now = Date.now();
+      const in14 = now + 14 * 86_400_000;
+      return {
+        totalMonthly: services
+          .filter((s) => s.status !== 'inactive')
+          .reduce((sum, s) => sum + s.monthlyCost, 0),
+        totalMonthlyHours: +(
+          services.reduce((sum, s) => sum + s.weeklyUsageHours, 0) * 4.33
+        ).toFixed(0),
+        activeCount: services.filter(
+          (s) => s.status === 'active' || s.status === 'trial',
+        ).length,
+        upcomingCount: services.filter((s) => {
+          const t = new Date(s.nextBillingDate + 'T00:00:00').getTime();
+          return t >= now && t <= in14;
+        }).length,
+        trialService: services.find((s) => s.status === 'trial'),
+      };
+    }, []);
 
   const usageBarData = useMemo(
     () => services.map((s) => ({ name: s.name, hours: s.weeklyUsageHours, color: s.accentColor })),
@@ -97,7 +310,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-6xl">
-      {/* Page heading */}
+      {/* Heading */}
       <div>
         <h1 className="text-xl font-semibold text-text-primary">Good morning, Jamie</h1>
         <p className="text-sm mt-0.5 text-text-secondary">
@@ -113,8 +326,8 @@ export default function Dashboard() {
         >
           <AlertTriangle size={15} className="text-amber flex-shrink-0" aria-hidden="true" />
           <p className="text-text-primary">
-            <span className="text-amber font-semibold">Podimo trial</span> expires on Apr 30 — you'll
-            be charged{' '}
+            <span className="text-amber font-semibold">Podimo trial</span> expires on Apr 30 —
+            you'll be charged{' '}
             <span className="font-mono">${trialService.monthlyCost}/mo</span> if you don't cancel.
           </p>
           <button
@@ -136,9 +349,9 @@ export default function Dashboard() {
         />
         <StatCard
           icon={Clock}
-          label="Weekly Listen"
-          value={`${totalHours.toFixed(1)}h`}
-          sub="Total across platforms"
+          label="Hours This Month"
+          value={`${totalMonthlyHours}h`}
+          sub="Est. from weekly avg"
           iconClass="text-purple"
           iconBg="bg-purple-dim"
         />
@@ -151,91 +364,110 @@ export default function Dashboard() {
           iconBg="bg-blue-dim"
         />
         <StatCard
-          icon={TrendingUp}
-          label="Annual Spend"
-          value={`$${(totalMonthly * 12).toFixed(0)}`}
-          sub="Projected for 2026"
+          icon={Calendar}
+          label="Upcoming Renewals"
+          value={String(upcomingCount)}
+          sub="Bills due in 14 days"
           iconClass="text-amber"
           iconBg="bg-amber-dim"
         />
       </div>
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <ChartCard title="Monthly Spend" sub="Last 6 months" >
-          <div className="lg:col-span-3">
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={monthlySpendData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#00d4aa" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#00d4aa" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
-                <XAxis dataKey="month" tick={{ fill: '#8892a4', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#8892a4', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
-                <Tooltip content={<ChartTooltip prefix="$" />} cursor={{ stroke: '#252d42', strokeWidth: 1 }} />
-                <Area type="monotone" dataKey="amount" stroke="#00d4aa" strokeWidth={2} fill="url(#spendGrad)"
-                  dot={{ fill: '#00d4aa', r: 3, strokeWidth: 0 }}
-                  activeDot={{ fill: '#00d4aa', r: 5, strokeWidth: 0 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <ChartCard title="Monthly Spend" sub="Last 6 months" className="lg:col-span-2">
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={monthlySpendData} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
+              <defs>
+                <linearGradient id="spendGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00d4aa" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#00d4aa" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: '#8892a4', fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: '#8892a4', fontSize: 11, fontFamily: 'DM Mono, monospace' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${v}`}
+              />
+              <Tooltip
+                content={<ChartTooltip prefix="$" />}
+                cursor={{ stroke: '#252d42', strokeWidth: 1 }}
+              />
+              <Area
+                type="monotone"
+                dataKey="amount"
+                stroke="#00d4aa"
+                strokeWidth={2}
+                fill="url(#spendGrad)"
+                dot={{ fill: '#00d4aa', r: 3, strokeWidth: 0 }}
+                activeDot={{ fill: '#00d4aa', r: 5, strokeWidth: 0 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </ChartCard>
 
         <ChartCard title="Weekly Usage" sub="Hours per platform">
-          <div className="lg:col-span-2">
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={usageBarData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: '#8892a4', fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#8892a4', fontSize: 11, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}h`} />
-                <Tooltip content={<ChartTooltip suffix="h" />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
-                  {usageBarData.map((entry, idx) => (
-                    <Cell key={idx} fill={entry.color} fillOpacity={0.85} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={180}>
+            <BarChart data={usageBarData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: '#8892a4', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={{ fill: '#8892a4', fontSize: 11, fontFamily: 'DM Mono, monospace' }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `${v}h`}
+              />
+              <Tooltip
+                content={<ChartTooltip suffix="h" />}
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+              />
+              <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
+                {usageBarData.map((entry, idx) => (
+                  <Cell key={idx} fill={entry.color} fillOpacity={0.85} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </ChartCard>
       </div>
 
-      {/* Connected services table */}
-      <div className="card overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+      {/* Connected Services grid */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-text-primary">Connected Services</h2>
           <button
             onClick={() => navigate('/subscriptions')}
-            className="text-xs font-medium text-teal hover:text-teal-hover"
+            className="text-xs font-medium text-teal hover:text-teal-hover transition-colors"
           >
-            View all →
+            Manage all →
           </button>
         </div>
-        <ul role="list">
-          {services.map((service, i) => (
-            <li
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {services.map((service) => (
+            <ServiceGridCard
               key={service.id}
-              className={`flex items-center gap-4 px-5 py-3.5 hover:bg-bg-hover transition-colors ${i < services.length - 1 ? 'border-b border-border' : ''}`}
-            >
-              <ServiceLogo id={service.id} name={service.name} logoChar={service.logoChar} size="sm" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary">{service.name}</p>
-                <p className="text-xs text-text-secondary">{service.plan}</p>
-              </div>
-              <StatusBadge status={service.status} />
-              <div className="text-right">
-                <p className="text-sm font-medium font-mono text-text-primary">
-                  ${service.monthlyCost.toFixed(2)}
-                </p>
-                <p className="text-xs text-text-secondary">/month</p>
-              </div>
-            </li>
+              service={service}
+              onClick={() => navigate('/subscriptions')}
+            />
           ))}
-        </ul>
+        </div>
       </div>
+
+      {/* Renewal Timeline */}
+      <RenewalTimeline />
     </div>
   );
 }
