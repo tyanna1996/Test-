@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { Bell, Menu } from 'lucide-react';
+import { Bell } from 'lucide-react';
 import { notifications } from '../../data/services';
 import type { Notification } from '../../types';
 
 const typeDots: Record<Notification['type'], string> = {
-  trial: 'bg-amber',
+  trial:   'bg-amber',
   billing: 'bg-teal',
-  new: 'bg-green',
-  usage: 'bg-purple',
+  new:     'bg-green',
+  usage:   'bg-purple',
 };
 
 function NotificationPanel({ onClose }: { onClose: () => void }) {
@@ -27,19 +27,20 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
       role="dialog"
       aria-label="Notifications"
       aria-modal="false"
-      className="absolute right-0 top-12 w-80 card shadow-2xl z-50"
+      className="absolute right-0 top-12 w-80 card shadow-xl z-50"
     >
       <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <h2 className="text-sm font-semibold text-text-primary">Notifications</h2>
-        <span className="text-xs text-text-secondary">{notifications.filter(n => !n.read).length} unread</span>
+        <span className="text-xs text-text-secondary">
+          {notifications.filter((n) => !n.read).length} unread
+        </span>
       </div>
       <ul className="py-1 max-h-80 overflow-y-auto" role="list">
         {notifications.map((n) => (
           <li
             key={n.id}
             className={[
-              'px-4 py-3 flex gap-3 items-start cursor-pointer',
-              'hover:bg-bg-hover transition-colors',
+              'px-4 py-3 flex gap-3 items-start cursor-pointer hover:bg-bg-hover transition-colors',
               !n.read ? 'bg-teal-dim/30' : '',
             ].join(' ')}
           >
@@ -60,11 +61,7 @@ function NotificationPanel({ onClose }: { onClose: () => void }) {
   );
 }
 
-interface TopbarProps {
-  onMenuClick: () => void;
-}
-
-export default function Topbar({ onMenuClick }: TopbarProps) {
+export default function Topbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const unread = notifications.filter((n) => !n.read).length;
   const bellRef = useRef<HTMLDivElement>(null);
@@ -81,24 +78,19 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
   return (
     <header
-      className="h-14 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 bg-bg-secondary border-b border-border"
+      className="h-16 flex items-center justify-between px-6 sm:px-10 flex-shrink-0 bg-bg-primary border-b border-border"
       role="banner"
     >
-      {/* Mobile hamburger */}
-      <button
-        onClick={onMenuClick}
-        className="lg:hidden p-2 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-hover mr-2"
-        aria-label="Open navigation menu"
+      {/* Wordmark */}
+      <span
+        className="text-4xl font-black tracking-tight text-text-primary leading-none select-none"
+        aria-label="MONO"
       >
-        <Menu size={18} />
-      </button>
-
-      {/* Spacer */}
-      <div className="flex-1" />
+        MONO
+      </span>
 
       {/* Right controls */}
       <div className="flex items-center gap-2">
-        {/* Notification bell */}
         <div ref={bellRef} className="relative">
           <button
             onClick={() => setNotifOpen((v) => !v)}
@@ -109,18 +101,14 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           >
             <Bell size={17} strokeWidth={1.8} aria-hidden="true" />
             {unread > 0 && (
-              <span
-                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal"
-                aria-hidden="true"
-              />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal" aria-hidden="true" />
             )}
           </button>
           {notifOpen && <NotificationPanel onClose={() => setNotifOpen(false)} />}
         </div>
 
-        {/* Avatar */}
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold cursor-pointer bg-gradient-to-br from-teal to-cyan text-bg-primary select-none"
+          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold cursor-pointer bg-teal text-white select-none"
           aria-label="Jamie Doe — account menu"
           role="button"
           tabIndex={0}

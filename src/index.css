@@ -3,47 +3,47 @@
 @import "tailwindcss";
 
 @theme {
-  /* Backgrounds */
-  --color-bg-primary: #0f1117;
-  --color-bg-secondary: #161b27;
-  --color-bg-card: #1a2035;
-  --color-bg-hover: #1e2640;
-  --color-bg-elevated: #212840;
+  /* Backgrounds — warm sandy beige palette */
+  --color-bg-primary:   #e8d2bf;
+  --color-bg-secondary: #ddc4ae;
+  --color-bg-card:      #f4ede4;
+  --color-bg-hover:     #e0c8b4;
+  --color-bg-elevated:  #d8c0a8;
 
   /* Borders */
-  --color-border: #252d42;
-  --color-border-subtle: #1e2640;
+  --color-border:        #cbb598;
+  --color-border-subtle: #d8c0a8;
 
-  /* Brand — teal */
-  --color-teal: #00d4aa;
-  --color-teal-hover: #00bfa0;
-  --color-teal-dim: #00d4aa1a;
-  --color-teal-dim-hover: #00d4aa26;
+  /* Brand — forest green */
+  --color-teal:          #1e5c40;
+  --color-teal-hover:    #185235;
+  --color-teal-dim:      #1e5c401e;
+  --color-teal-dim-hover:#1e5c402a;
 
   /* Text */
-  --color-text-primary: #e8eaf0;
-  --color-text-secondary: #8892a4;
-  --color-text-muted: #4a5568;
+  --color-text-primary:   #1c1814;
+  --color-text-secondary: #5c4a3a;
+  --color-text-muted:     #8a7260;
 
-  /* Semantic — status / accent colours */
-  --color-amber: #f59e0b;
-  --color-amber-dim: #f59e0b1a;
-  --color-danger: #ef4444;
-  --color-danger-dim: #ef44441a;
-  --color-green: #22c55e;
-  --color-green-dim: #22c55e1a;
-  --color-purple: #8b5cf6;
-  --color-purple-dim: #8b5cf61a;
-  --color-blue: #3b82f6;
-  --color-blue-dim: #3b82f61a;
-  --color-cyan: #06b6d4;
-  --color-orange: #f97316;
+  /* Semantic */
+  --color-amber:      #b05c10;
+  --color-amber-dim:  #b05c1018;
+  --color-danger:     #be3a2e;
+  --color-danger-dim: #be3a2e18;
+  --color-green:      #1e5c40;
+  --color-green-dim:  #1e5c4018;
+  --color-purple:     #6d28d9;
+  --color-purple-dim: #6d28d918;
+  --color-blue:       #2563eb;
+  --color-blue-dim:   #2563eb18;
+  --color-cyan:       #0891b2;
+  --color-orange:     #c2460a;
 
   /* Service accent colours */
-  --color-audible: #f59e0b;
-  --color-storytel: #8b5cf6;
-  --color-podimo: #ef4444;
-  --color-spotify: #22c55e;
+  --color-audible:  #b05c10;
+  --color-storytel: #6d28d9;
+  --color-podimo:   #be3a2e;
+  --color-spotify:  #1e5c40;
 
   /* Typography */
   --font-sans: 'DM Sans', sans-serif;
@@ -72,8 +72,6 @@ body {
 ::-webkit-scrollbar-track { background: var(--color-bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-bg-elevated); }
-
-/* Firefox */
 * { scrollbar-width: thin; scrollbar-color: var(--color-border) var(--color-bg-primary); }
 
 /* ── Typography helpers ───────────────────── */
@@ -84,9 +82,10 @@ body {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
+  box-shadow: 0 1px 4px rgba(28, 20, 12, 0.08);
 }
 
-/* ── Sidebar nav link active state ───────── */
+/* ── Nav link active state ────────────────── */
 .nav-link-active {
   color: var(--color-teal) !important;
   background-color: var(--color-teal-dim) !important;
@@ -106,15 +105,15 @@ body {
   border-radius: 4px;
 }
 
-/* ── Smooth transitions on interactive elements */
+/* ── Smooth transitions ───────────────────── */
 button, a, [role="button"] {
   transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
-/* ── Poster card: hide scrollbar on scroll rows ── */
+/* ── Scroll row: hide scrollbar ──────────── */
 .scroll-row::-webkit-scrollbar { display: none; }
 .scroll-row { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Poster card hover scale ── */
+/* ── Poster card hover scale ──────────────── */
 .poster-card:hover .poster-cover { transform: scale(1.03); }
 .poster-cover { transition: transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94); }
