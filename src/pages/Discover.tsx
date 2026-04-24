@@ -43,6 +43,15 @@ const GENRE: Record<string, string> = {
   'Technology': 'bg-teal-dim   text-teal',
 };
 
+/* ── Per-card bold color themes (maps to inspo's vivid palettes) ── */
+const CARD_THEMES = [
+  { bg: '#07051c', label: '#c4b5fd', muted: '#6d28d9aa', accent: '#7c3aed' }, // deep violet
+  { bg: '#f4ede0', label: '#1c1510', muted: '#78716caa', accent: '#8b5cf6' }, // warm cream
+  { bg: '#130c00', label: '#fde68a', muted: '#d97706aa', accent: '#f59e0b' }, // amber-dark
+  { bg: '#dbeafe', label: '#1e3a8a', muted: '#3b82f6aa', accent: '#2563eb' }, // sky-light
+  { bg: '#180020', label: '#f9a8d4', muted: '#be185daa', accent: '#ec4899' }, // magenta-dark
+] as const;
+
 const SUGGESTIONS = [
   'Atomic Habits',
   'Serial',
@@ -293,128 +302,155 @@ function ScrollRow({
   );
 }
 
-/* ── Hero featured card ───────────────────────────────── */
-function HeroCard({ item }: { item: ContentItem }) {
-  const { active, free } = accessInfo(item);
-  const gCls = GENRE[item.genre] ?? 'bg-teal-dim text-teal';
-  const mono = monogram(item.title);
+/* ── Featured strip (inspo-style bold editorial cards) ───── */
+function FeaturedStrip({ items }: { items: ContentItem[] }) {
+  const [active, setActive] = useState(0);
+
+  const cards = useMemo(() => {
+    const out: ContentItem[] = [];
+    for (const c of items) { if (c.trending && out.length < 5) out.push(c); }
+    for (const c of items) { if (!c.trending && out.length < 5) out.push(c); }
+    return out.slice(0, 5);
+  }, [items]);
+
+  const sel = cards[active];
+  const { active: activePlats, free } = sel ? accessInfo(sel) : { active: [] as string[], free: false };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl">
-      {/* BG layers */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: `radial-gradient(ellipse at 72% 42%, ${item.coverColor}32 0%, ${item.coverColor}08 58%, transparent 80%)`,
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(105deg, #0b0f1a 42%, transparent 100%)' }}
-      />
+    <div className="space-y-2.5">
+      {/* Card row */}
+      <div className="flex gap-2.5 overflow-x-auto sm:overflow-x-visible" style={{ height: 252 }}>
+        {cards.map((item, i) => {
+          const t = CARD_THEMES[i];
+          const isActive = active === i;
+          const mono = monogram(item.title);
 
-      {/* Decorative monogram */}
-      <div
-        className="absolute right-0 sm:right-10 top-1/2 -translate-y-1/2 font-black leading-none select-none pointer-events-none"
-        style={{
-          fontSize: 'clamp(110px, 18vw, 210px)',
-          color: item.coverColor,
-          opacity: 0.055,
-          letterSpacing: '-0.06em',
-        }}
-        aria-hidden="true"
-      >
-        {mono}
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActive(i)}
+              aria-pressed={isActive}
+              className="relative flex-shrink-0 w-[148px] sm:flex-1 sm:w-auto rounded-2xl overflow-hidden cursor-pointer text-left focus:outline-none"
+              style={{
+                background: t.bg,
+                boxShadow: isActive
+                  ? `0 0 0 2.5px ${t.accent}, 0 12px 32px ${t.accent}28`
+                  : '0 0 0 2.5px transparent',
+                transition: 'box-shadow 250ms ease, transform 250ms ease',
+              }}
+              onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.transform = 'scale(1.02)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+            >
+              {/* Monogram watermark */}
+              <div
+                className="absolute bottom-0 right-0 font-black leading-none pointer-events-none select-none"
+                style={{
+                  fontSize: 88,
+                  color: t.accent,
+                  opacity: 0.13,
+                  letterSpacing: '-0.04em',
+                  lineHeight: 0.85,
+                  paddingRight: 4,
+                }}
+                aria-hidden="true"
+              >
+                {mono}
+              </div>
+
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-between p-4">
+                {/* Top row */}
+                <div className="flex items-start justify-between gap-1">
+                  <span
+                    className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+                    style={{ background: t.accent + '22', color: t.label, opacity: 0.75 }}
+                  >
+                    {item.type === 'audiobook' ? 'Book' : 'Podcast'}
+                  </span>
+                  {item.trending && (
+                    <span
+                      className="text-[9px] font-black uppercase tracking-wider"
+                      style={{ color: t.accent }}
+                    >
+                      ↑
+                    </span>
+                  )}
+                </div>
+
+                {/* Bottom text */}
+                <div>
+                  <p
+                    className="text-[9px] font-semibold uppercase tracking-widest mb-1"
+                    style={{ color: t.label, opacity: 0.42 }}
+                  >
+                    {item.author}
+                  </p>
+                  <h3
+                    className="font-black uppercase leading-tight line-clamp-3"
+                    style={{
+                      fontSize: 'clamp(13px, 1.45vw, 16px)',
+                      color: t.label,
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p
+                    className="font-mono mt-3"
+                    style={{ fontSize: 10, color: t.label, opacity: 0.25 }}
+                  >
+                    {String(i + 1).padStart(2, '0')}
+                  </p>
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Content */}
-      <div className="relative px-6 py-8 sm:px-10 sm:py-10">
-        <div className="max-w-md">
-          {/* Eye-brow */}
-          <div className="flex items-center gap-2.5 mb-4">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-text-muted">
-              Featured
-            </span>
-            <span className="text-text-muted opacity-40">·</span>
-            <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${gCls}`}>
-              {item.genre}
-            </span>
-          </div>
-
-          {/* Title */}
-          <h2 className="text-2xl sm:text-[32px] font-bold text-text-primary leading-tight tracking-tight">
-            {item.title}
-          </h2>
-          <p className="text-sm text-text-secondary mt-1.5">by {item.author}</p>
-
-          {/* Meta */}
-          <div className="flex items-center gap-3 mt-3 text-xs">
-            <span className="flex items-center gap-1">
-              <Star size={12} className="text-amber" fill="currentColor" aria-hidden="true" />
-              <span className="font-mono text-amber font-semibold">{item.rating}</span>
-            </span>
-            {item.duration && (
-              <span className="font-mono text-text-muted">{item.duration}</span>
-            )}
-            {item.year && <span className="text-text-muted">{item.year}</span>}
-          </div>
-
-          {/* Platform chips */}
-          <div className="flex flex-wrap gap-1.5 mt-5" role="list" aria-label="Platform availability">
-            {PLAT_ORDER.map((id) => {
-              const meta      = SVC[id];
-              const available = Boolean(item.platforms[id]);
-              const isTrial   = TRIAL_SUBS.has(id);
-              if (!available) {
-                return (
-                  <span
-                    key={id}
-                    role="listitem"
-                    className="text-xs px-2.5 py-1 rounded-full text-text-muted bg-border/30"
-                  >
-                    Not on {meta.name}
-                  </span>
-                );
-              }
-              return (
-                <span
-                  key={id}
-                  role="listitem"
-                  className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium"
-                  style={{ backgroundColor: meta.color + '18', color: meta.color }}
-                >
-                  <Check size={10} aria-hidden="true" />
-                  {meta.name}
-                  {isTrial && (
-                    <span className="opacity-55 font-normal text-[10px]"> · trial</span>
-                  )}
+      {/* Selected-item detail bar */}
+      {sel && (
+        <div
+          className="rounded-xl px-5 py-3.5 flex items-center gap-4 flex-wrap"
+          style={{
+            background: CARD_THEMES[active].bg + 'cc',
+            border: `1px solid ${CARD_THEMES[active].accent}2e`,
+          }}
+        >
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-2">
+              <Star size={11} className="text-amber flex-shrink-0" fill="currentColor" aria-hidden="true" />
+              <span className="text-xs font-mono text-amber">{sel.rating}</span>
+              <span className="text-xs" style={{ color: CARD_THEMES[active].label, opacity: 0.4 }}>
+                {sel.duration ?? (sel.episodes != null ? `${sel.episodes} eps` : '')}
+              </span>
+              {sel.year && (
+                <span className="text-xs" style={{ color: CARD_THEMES[active].label, opacity: 0.35 }}>
+                  {sel.year}
                 </span>
-              );
-            })}
+              )}
+            </div>
+            {free && activePlats.length > 0 && (
+              <p className="text-xs flex items-center gap-1" style={{ color: CARD_THEMES[active].accent }}>
+                <Check size={9} aria-hidden="true" />
+                Free · {activePlats.map((id) => SVC[id].name).join(' & ')}
+              </p>
+            )}
           </div>
-
-          {/* Access callout */}
-          {free && (
-            <p className="mt-2.5 text-xs text-teal flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal flex-shrink-0" aria-hidden="true" />
-              Free with your{' '}
-              {active.map((id) => SVC[id].name).join(' & ')}{' '}
-              subscription{active.length > 1 ? 's' : ''}
-            </p>
-          )}
-
-          {/* Actions */}
-          <div className="flex items-center gap-2.5 mt-6">
-            <button className="flex items-center gap-2 text-sm font-semibold px-6 py-2.5 rounded-xl bg-teal text-bg-primary hover:bg-teal-hover transition-colors">
-              <Play size={13} fill="currentColor" aria-hidden="true" />
-              Listen Now
+          <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-opacity hover:opacity-85"
+              style={{ background: CARD_THEMES[active].accent, color: '#fff' }}
+            >
+              <Play size={10} fill="currentColor" aria-hidden="true" />
+              {free ? 'Listen Now' : 'Explore'}
             </button>
-            <button className="text-sm px-5 py-2.5 rounded-xl bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors">
+            <button className="text-xs px-3 py-2 rounded-xl bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors">
               + Save
             </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -575,8 +611,8 @@ export default function Discover() {
       ) : (
         /* Default browse view */
         <>
-          {/* Hero */}
-          <HeroCard item={trending[0]} />
+          {/* Featured strip */}
+          <FeaturedStrip items={ALL_CONTENT} />
 
           {/* Rows */}
           <ScrollRow title="Trending Now"  items={trending}   />
