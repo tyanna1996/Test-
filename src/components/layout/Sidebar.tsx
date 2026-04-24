@@ -49,10 +49,10 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold bg-teal text-bg-primary select-none"
               aria-hidden="true"
             >
-              A
+              M
             </div>
             <span className="text-base font-semibold tracking-tight text-text-primary">
-              Audify
+              MONO
             </span>
           </div>
           <button

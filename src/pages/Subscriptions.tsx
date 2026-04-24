@@ -64,7 +64,7 @@ function ConnectModal({ onClose }: { onClose: () => void }) {
               Connect a Service
             </h2>
             <p className="text-xs mt-0.5 text-text-secondary">
-              Link your subscriptions to track them in Audify
+              Link your subscriptions to track them in MONO
             </p>
           </div>
           <button
