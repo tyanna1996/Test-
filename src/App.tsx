@@ -10,10 +10,10 @@ export default function App() {
     <HashRouter>
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Discover />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="insights" element={<Insights />} />
-          <Route path="discover" element={<Discover />} />
         </Route>
       </Routes>
     </HashRouter>

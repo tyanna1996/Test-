@@ -8,10 +8,10 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/', icon: Compass, label: 'Discover' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/subscriptions', icon: CreditCard, label: 'My Subscriptions' },
   { to: '/insights', icon: BarChart3, label: 'Usage & Insights' },
-  { to: '/discover', icon: Compass, label: 'Discover' },
 ];
 
 interface SidebarProps {
