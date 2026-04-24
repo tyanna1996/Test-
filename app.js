@@ -1,7 +1,7 @@
 'use strict';
 
 /* ════════════════════════════════════════
-   AUDIFY — app.js
+   MONO — app.js
    ════════════════════════════════════════ */
 
 /* ── Config ── */
@@ -436,13 +436,13 @@ const DEMO_POSTS = [
   {
     id: 3, initials: 'AD', username: '@audiophile.daily', time: '1d ago',
     source: 'tiktok', category: 'Comedy',
-    text: "Found 'Conan O'Brien Needs a Friend' through Audify's cross-platform search and I literally cannot stop laughing 💀 This is the only app that searches everywhere at once.",
+    text: "Found 'Conan O'Brien Needs a Friend' through MONO's cross-platform search and I literally cannot stop laughing 💀 This is the only app that searches everywhere at once.",
     likes: 342, liked: false,
   },
   {
     id: 4, initials: 'JR', username: 'JONAS R', time: '2d ago',
     source: null, category: 'Question',
-    text: "Does anyone here use Storytel? I keep seeing it in Audify search results and wondering if it's worth subscribing alongside Audible. Any thoughts on the library size?",
+    text: "Does anyone here use Storytel? I keep seeing it in MONO search results and wondering if it's worth subscribing alongside Audible. Any thoughts on the library size?",
     likes: 5, liked: false,
   },
 ];
