@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["claude/build-audify-mvp-4ZEcP"]
+    branches: ["claude/continue-session-2ARnE"]
   workflow_dispatch:
 
 permissions:
