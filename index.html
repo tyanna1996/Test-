@@ -1,13 +1,152 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MONO — Audio Subscription Hub</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-logo">
+        <img
+          src="assets/logo.png"
+          alt="Audify logo"
+          class="logo-img"
+          onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'"
+        >
+        <div id="logo-fallback" class="logo-fallback">🐱</div>
+        <span class="logo-wordmark">AUDIFY</span>
+      </div>
+
+      <div class="navbar-nav">
+        <button class="nav-pill active" data-page="discover">Discover</button>
+        <button class="nav-pill" data-page="popular">Popular</button>
+        <button class="nav-pill" data-page="community">Community</button>
+      </div>
+
+      <div class="avatar" aria-label="Account — AS">AS</div>
+    </div>
+  </nav>
+
+  <!-- ── Page: Discover ── -->
+  <div id="page-discover" class="page active">
+
+    <section class="search-hero">
+      <h1>Find anything, everywhere</h1>
+      <p class="hero-sub">Podcasts · Audiobooks · All platforms at once</p>
+      <div class="search-bar">
+        <input
+          type="search"
+          id="search-input"
+          placeholder="Search podcasts, audiobooks, authors…"
+          autocomplete="off"
+        >
+        <button id="search-btn" class="btn btn-search">Search</button>
+      </div>
+    </section>
+
+    <div class="container">
+
+      <!-- Source strip -->
+      <div class="source-strip" aria-label="Available sources">
+        <div class="source-badges">
+          <span class="badge badge-teal">● iTunes</span>
+          <span class="badge badge-teal">● LibriVox</span>
+          <span class="badge badge-teal">● Open Library</span>
+          <span class="badge badge-purple">● YouTube</span>
+          <span class="badge badge-grey">→ Spotify</span>
+          <span class="badge badge-grey">→ Podimo</span>
+          <span class="badge badge-grey">→ Audible</span>
+          <span class="badge badge-grey">→ Wondery</span>
+          <span class="badge badge-grey">→ Storytel</span>
+          <span class="badge badge-grey">→ Google Podcasts</span>
+          <span class="badge badge-grey">→ Scribd</span>
+          <span class="badge badge-grey">→ Kobo</span>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <div class="filter-row">
+          <span class="filter-label">Type</span>
+          <div class="pill-group" id="type-filters" role="group" aria-label="Filter by type">
+            <button class="pill active" data-type="all">All</button>
+            <button class="pill" data-type="podcasts">Podcasts</button>
+            <button class="pill" data-type="audiobooks">Audiobooks</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Category</span>
+          <div class="pill-group" id="category-filters" role="group" aria-label="Filter by category">
+            <button class="pill active" data-cat="all">All</button>
+            <button class="pill" data-cat="true crime">True Crime</button>
+            <button class="pill" data-cat="business">Business</button>
+            <button class="pill" data-cat="tech">Tech</button>
+            <button class="pill" data-cat="comedy">Comedy</button>
+            <button class="pill" data-cat="society">Society</button>
+            <button class="pill" data-cat="health">Health</button>
+            <button class="pill" data-cat="fiction">Fiction</button>
+            <button class="pill" data-cat="history">History</button>
+            <button class="pill" data-cat="science">Science</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div id="results-area"></div>
+
+    </div>
+  </div>
+
+  <!-- ── Page: Popular ── -->
+  <div id="page-popular" class="page">
+    <div class="container">
+      <div class="page-header">
+        <h2 class="page-title">Popular</h2>
+        <p class="page-subtitle">Top 20 Podcasts · Apple Charts</p>
+      </div>
+      <div id="popular-list"></div>
+    </div>
+  </div>
+
+  <!-- ── Page: Community ── -->
+  <div id="page-community" class="page">
+    <div class="container">
+      <div class="page-header">
+        <h2 class="page-title">Community</h2>
+      </div>
+
+      <div class="post-composer">
+        <textarea
+          id="post-input"
+          placeholder="Share a recommendation, thought, or question…"
+          rows="3"
+        ></textarea>
+        <div class="composer-footer">
+          <span class="composer-hint">Reddit &amp; TikTok picks also appear here</span>
+          <button id="post-btn" class="btn btn-dark">Post</button>
+        </div>
+      </div>
+
+      <div id="community-grid" class="community-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── Modal ── -->
+  <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Content details">
+    <div class="modal">
+      <div id="modal-content"></div>
+      <button id="modal-close" class="btn btn-outline modal-close-btn">Close</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
 </html>
