@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relocation Planner · NL → TH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-a: #DCE3EA;
+    --bg-b: #C7D1DA;
+    --glass: rgba(255,255,255,0.62);
+    --glass-strong: rgba(255,255,255,0.88);
+    --glass-border: rgba(255,255,255,0.75);
+    --ink: #12161D;
+    --ink-soft: #545C68;
+    --ink-faint: #8B92A0;
+    --navy: #10151C;
+    --line: rgba(18,22,29,0.08);
+    --green: #3F7A56;
+    --green-bg: rgba(63,122,86,0.12);
+    --amber: #A9791F;
+    --amber-bg: rgba(169,121,31,0.13);
+    --coral: #A44A38;
+    --coral-bg: rgba(164,74,56,0.13);
+    --radius-lg: 26px;
+    --radius-md: 16px;
+    --radius-sm: 11px;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    background:
+      radial-gradient(1000px 600px at -10% -20%, rgba(255,255,255,0.9), transparent 55%),
+      radial-gradient(900px 700px at 110% 0%, rgba(255,255,255,0.5), transparent 50%),
+      linear-gradient(160deg, var(--bg-a), var(--bg-b));
+    background-attachment: fixed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  button { font-family: inherit; }
+
+  .app {
+    display: flex;
+    gap: 18px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 18px 40px;
+    align-items: flex-start;
+  }
+  @media (max-width: 760px) {
+    .app { flex-direction: column; padding: 14px 14px 90px; }
+  }
+
+  /* ---------- Rail ---------- */
+  .rail {
+    background: var(--glass);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border);
+    border-radius: 22px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 18px;
+  }
+  @media (max-width: 760px) {
+    .rail {
+      position: fixed; left: 50%; bottom: 16px; top: auto; transform: translateX(-50%);
+      flex-direction: row; z-index: 40;
+    }
+  }
+
+  .rail-btn {
+    width: 42px; height: 42px;
+    border-radius: 13px;
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .rail-btn:hover { background: rgba(255,255,255,0.5); color: var(--ink); }
+  .rail-btn.primary { background: var(--navy); color: #fff; }
+  .rail-btn.primary:hover { background: #1c2430; }
+  .rail-btn.active { background: rgba(18,22,29,0.09); color: var(--ink); }
+  .rail-btn:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+  .rail-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--coral);
+    border: 1.5px solid #fff;
+  }
+  .rail-sep { width: 24px; height: 1px; background: var(--line); margin: 4px 0; }
+
+  /* ---------- Panels layout ---------- */
+  .panels {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+    min-width: 0;
+  }
+  @media (max-width: 940px) {
+    .panels { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--glass);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+  }
+
+  .eyebrow { font-size: 12.5px; color: var(--ink-faint); font-weight: 500; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .eyebrow strong { color: var(--ink); font-weight: 700; }
+
+  .panel h2 { font-size: 19px; font-weight: 800; margin: 0 0 14px; letter-spacing: -0.01em; }
+
+  /* ---------- Status pills (planner) ---------- */
+  .status-pills { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+  .status-pill {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--glass-strong); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm); padding: 11px 14px;
+    cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink-soft);
+  }
+  .status-pill.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .status-pill .left { display: flex; align-items: center; gap: 9px; }
+  .status-pill .count { font-size: 12px; font-weight: 700; background: rgba(18,22,29,0.08); color: var(--ink); border-radius: 999px; padding: 1px 8px; }
+  .status-pill.active .count { background: rgba(255,255,255,0.22); color: #fff; }
+  .status-pill .chev { opacity: 0.5; font-size: 12px; }
+
+  /* ---------- Next deadline card ---------- */
+  .deadline-card {
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 18px;
+  }
+  .ring-wrap { position: relative; width: 88px; height: 88px; flex-shrink: 0; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: rgba(18,22,29,0.08); stroke-width: 6; }
+  .ring-fg { fill: none; stroke: var(--navy); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-center .n { font-size: 20px; font-weight: 800; line-height: 1; }
+  .ring-center .u { font-size: 10px; color: var(--ink-faint); font-weight: 600; }
+  .deadline-info { min-width: 0; }
+  .deadline-info .d-task { font-size: 14.5px; font-weight: 700; margin: 0 0 4px; line-height: 1.3; }
+  .deadline-info .d-date { font-size: 12.5px; color: var(--ink-faint); font-weight: 500; }
+  .deadline-empty { font-size: 13px; color: var(--ink-faint); }
+
+  /* ---------- Mini calendar ---------- */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-head .cal-title { font-size: 13.5px; font-weight: 700; }
+  .cal-nav-btn { width: 26px; height: 26px; border-radius: 8px; border: none; background: var(--glass-strong); cursor: pointer; color: var(--ink-soft); font-size: 12px; }
+  .cal-nav-btn:hover { background: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { font-size: 10px; font-weight: 700; color: var(--ink-faint); text-align: center; padding-bottom: 4px; }
+  .cal-day {
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; border-radius: 9px; color: var(--ink-soft);
+    position: relative; cursor: default;
+  }
+  .cal-day.pad { visibility: hidden; }
+  .cal-day.today { background: var(--navy); color: #fff; }
+  .cal-day .mark { position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--coral); }
+  .cal-day.today .mark { background: #fff; }
+
+  /* ---------- Todo panel ---------- */
+  .todo-panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+  .todo-panel-head .count-tag { font-size: 12.5px; color: var(--ink-faint); font-weight: 600; }
+
+  .quick-add {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--glass-strong); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 18px;
+  }
+  .quick-add span.plus { font-size: 15px; color: var(--ink-faint); }
+  .quick-add input {
+    flex: 1; border: none; background: transparent; font-family: inherit;
+    font-size: 14px; color: var(--ink); outline: none;
+  }
+  .quick-add input::placeholder { color: var(--ink-faint); }
+  .quick-add .enter-hint {
+    font-size: 10.5px; font-weight: 700; color: var(--ink-faint);
+    background: rgba(18,22,29,0.06); border-radius: 5px; padding: 2px 6px; white-space: nowrap;
+  }
+
+  .group-block { margin-bottom: 8px; }
+  .group-toggle {
+    width: 100%; display: flex; align-items: center; gap: 8px;
+    background: none; border: none; cursor: pointer; padding: 8px 4px;
+    font-size: 13.5px; font-weight: 700; color: var(--ink);
+  }
+  .group-toggle .chev { font-size: 11px; color: var(--ink-faint); transition: transform 0.15s ease; }
+  .group-toggle.collapsed .chev { transform: rotate(-90deg); }
+  .group-toggle .g-count { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+  .group-items { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .group-items.collapsed { display: none; }
+
+  .item-row {
+    display: flex; align-items: flex-start; gap: 11px;
+    background: var(--glass-strong); border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm); padding: 11px 13px;
+  }
+  .item-check {
+    width: 21px; height: 21px; border-radius: 7px;
+    border: 2px solid rgba(18,22,29,0.22); background: #fff;
+    cursor: pointer; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center; font-size: 12px;
+    color: transparent; padding: 0;
+  }
+  .item-check.done { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .item-check.in-progress { border-color: var(--amber); background: var(--amber-bg); }
+  .item-check.blocked { border-color: var(--coral); background: var(--coral-bg); color: var(--coral); font-size: 10px; }
+
+  .item-body { flex: 1; min-width: 0; }
+  .item-tag { font-size: 10.5px; font-weight: 700; color: var(--ink-faint); margin-bottom: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .item-tag .owner-chip { background: rgba(18,22,29,0.07); border-radius: 999px; padding: 0 7px; }
+  .item-task { font-size: 13.5px; font-weight: 600; margin: 0; line-height: 1.35; }
+  .item-task.done { text-decoration: line-through; color: var(--ink-faint); }
+  .item-note { font-size: 12px; color: var(--ink-soft); margin: 3px 0 0; }
+  .item-log-toggle { margin-top: 5px; background: none; border: none; font-size: 11px; font-weight: 700; color: var(--ink-soft); cursor: pointer; padding: 0; }
+
+  .item-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .item-date { font-size: 11.5px; font-weight: 700; color: var(--ink-faint); white-space: nowrap; }
+  .item-date.overdue { color: var(--coral); }
+  .item-actions { display: flex; gap: 2px; }
+  .icon-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--ink-faint); padding: 3px 5px; border-radius: 6px; text-decoration: none; display: inline-flex; }
+  .icon-btn:hover { color: var(--ink); background: rgba(18,22,29,0.06); }
+
+  .log-panel { display: none; margin-top: 9px; padding-top: 9px; border-top: 1px dashed var(--line); }
+  .log-panel.open { display: block; }
+  .log-entry { font-size: 12px; margin-bottom: 7px; background: #fff; border-radius: 8px; padding: 7px 9px; }
+  .log-entry .log-ts { font-size: 10px; font-weight: 700; color: var(--ink-faint); margin-bottom: 2px; }
+  .log-add { display: flex; gap: 6px; margin-top: 5px; }
+  .log-add textarea { flex: 1; font-family: inherit; font-size: 12px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; background: #fff; resize: none; }
+  .log-add button { border: none; border-radius: 8px; background: var(--navy); color: #fff; font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 0 12px; cursor: pointer; flex-shrink: 0; }
+  .log-empty { font-size: 11.5px; color: var(--ink-faint); margin-bottom: 6px; }
+
+  .empty-note { font-size: 13px; color: var(--ink-faint); padding: 10px 2px; }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(12,16,22,0.4); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 60; }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--glass-strong); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border); border-radius: 22px; padding: 24px; width: 100%; max-width: 440px;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
+  .field { margin-bottom: 12px; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .field label { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+  input[type="text"], input[type="date"], textarea, .modal select {
+    font-family: inherit; font-size: 13.5px; background: #fff; color: var(--ink);
+    border: 1px solid rgba(18,22,29,0.12); border-radius: 10px; padding: 9px 11px; width: 100%;
+  }
+  input:focus-visible, textarea:focus-visible, select:focus-visible, .rail-btn:focus-visible, .status-pill:focus-visible {
+    outline: 2px solid var(--navy); outline-offset: 1px;
+  }
+  .field-hint { font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+  .gcal-link { font-size: 12px; font-weight: 700; color: var(--navy); background: rgba(18,22,29,0.07); border-radius: 999px; padding: 6px 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  .btn { font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; border-radius: 999px; padding: 10px 16px; }
+  .btn-ghost { background: rgba(18,22,29,0.06); color: var(--ink); }
+  .btn-dark { background: var(--navy); color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <nav class="rail">
+    <button class="rail-btn primary" id="nav-home" title="Home">🗓️</button>
+    <button class="rail-btn" id="nav-alerts" title="Alerts">🔔<span class="rail-dot" id="rail-dot" style="display:none;"></span></button>
+    <button class="rail-btn" id="nav-categories" title="Categories">🏛️</button>
+    <div class="rail-sep"></div>
+    <button class="rail-btn" id="nav-all" title="All milestones">☑️</button>
+    <button class="rail-btn" id="nav-add" title="Add milestone">＋</button>
+  </nav>
+
+  <div class="panels">
+    <!-- PLANNER PANEL -->
+    <section class="panel">
+      <p class="eyebrow">Relocation <strong>NL → Hua Hin</strong></p>
+      <h2>Overview</h2>
+
+      <div class="status-pills">
+        <button class="status-pill" data-status="not-started"><span class="left">○ To do</span><span class="count" id="count-not-started">0</span></button>
+        <button class="status-pill" data-status="in-progress"><span class="left">◐ In progress</span><span class="count" id="count-in-progress">0</span></button>
+        <button class="status-pill" data-status="blocked"><span class="left">⛔ Blocked</span><span class="count" id="count-blocked">0</span></button>
+        <button class="status-pill" data-status="done"><span class="left">✓ Done</span><span class="count" id="count-done">0</span></button>
+      </div>
+
+      <div class="deadline-card" id="deadline-card"></div>
+
+      <div class="cal-head">
+        <button class="cal-nav-btn" id="cal-prev">‹</button>
+        <span class="cal-title" id="cal-title">September 2026</span>
+        <button class="cal-nav-btn" id="cal-next">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </section>
+
+    <!-- TODO PANEL -->
+    <section class="panel">
+      <div class="todo-panel-head">
+        <h2 id="todo-title">Milestones</h2>
+        <span class="count-tag" id="todo-count"></span>
+      </div>
+
+      <div class="quick-add">
+        <span class="plus">＋</span>
+        <input type="text" id="quick-add-input" placeholder="Add a milestone, press Enter to save">
+        <span class="enter-hint">↵ ENTER</span>
+      </div>
+
+      <div id="groups-container"></div>
+    </section>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3 id="modal-title">Edit milestone</h3>
+    <div class="field">
+      <label for="f-task">Task</label>
+      <input type="text" id="f-task" placeholder="e.g. Book Thai embassy appointment">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="f-category">Category</label>
+        <select id="f-category"></select>
+      </div>
+      <div class="field">
+        <label for="f-owner">Owner</label>
+        <input type="text" id="f-owner" placeholder="Both">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="f-due">Timing label</label>
+        <input type="text" id="f-due" placeholder="e.g. Jun 2026">
+      </div>
+      <div class="field">
+        <label for="f-deadline">Deadline date</label>
+        <input type="date" id="f-deadline">
+      </div>
+    </div>
+    <div class="field" id="gcal-field" style="display:none;">
+      <a class="gcal-link" id="gcal-link" href="#" target="_blank" rel="noopener">📅 Add to Google Calendar</a>
+      <div class="field-hint">Opens Google Calendar with this task pre-filled — you confirm and save it there.</div>
+    </div>
+    <div class="field">
+      <label for="f-status">Status</label>
+      <select id="f-status">
+        <option value="not-started">Not started</option>
+        <option value="in-progress">In progress</option>
+        <option value="done">Done</option>
+        <option value="blocked">Blocked</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="f-notes">Context / notes</label>
+      <textarea id="f-notes" rows="2" placeholder="Optional detail"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel">Cancel</button>
+      <button class="btn btn-dark" id="modal-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const STORAGE_KEY = 'nl-th-relocation-tracker-v3';
+
+  const CATEGORIES = [
+    { id: 'visa',      label: 'Immigration', icon: '🛂' },
+    { id: 'nl-exit',   label: 'NL Offboard', icon: '🏛️' },
+    { id: 'nl-tax',    label: 'Tax', icon: '💶' },
+    { id: 'finance',   label: 'Finance', icon: '🏦' },
+    { id: 'housing',   label: 'Housing', icon: '🏠' },
+    { id: 'health',    label: 'Health', icon: '⚕️' },
+    { id: 'logistics', label: 'Logistics', icon: '📋' },
+    { id: 'transport', label: 'Transport', icon: '🚗' },
+    { id: 'settle',    label: 'Settling In', icon: '🔑' },
+  ];
+
+  const STATUS_META = {
+    'not-started': { label: 'To do' },
+    'in-progress': { label: 'In progress' },
+    'done':        { label: 'Done' },
+    'blocked':     { label: 'Blocked' },
+  };
+  const STATUS_ORDER = ['blocked', 'in-progress', 'not-started', 'done'];
+
+  const RAW_DATA = [
+    { task: 'Start international health insurance research', category: 'health', owner: 'Both', due: 'Now – Apr 2026', deadlineDate: '2026-04-30', status: 'done', notes: 'Pre-existing condition = 6+ month lead time. Contact Cigna, AXA, Pacific Cross, LUMA Health. Get 3+ quotes.' },
+    { task: 'Engage Dutch/Thai tax specialist', category: 'nl-tax', owner: 'Both', due: 'Apr – Jun 2026', deadlineDate: '2026-06-30', status: 'not-started', notes: 'Discuss M-form, Box 3 departure, DTA, rental income strategy. Recommend: Exterus, MFFA, OrangeTax.' },
+    { task: 'Apostille marriage certificate', category: 'logistics', owner: 'Both', due: 'Jun 2026', deadlineDate: '2026-06-30', status: 'not-started', notes: 'Apply at gemeente. Cost ~€15–30. Takes 1–4 weeks. Store with apostilled birth certificates.' },
+    { task: 'Finalise & sign health insurance policy', category: 'health', owner: 'Both', due: 'Jul 2026', deadlineDate: '2026-07-31', status: 'not-started', notes: 'Policy must meet Thai O-A minimum. Insurer must sign Thai Foreign Insurance Certificate form.' },
+    { task: 'Prepare visa financial documents', category: 'visa', owner: 'Both', due: 'Aug 2026', deadlineDate: '2026-08-31', status: 'not-started', notes: 'Gather 3-month bank statements showing €21,000+ (฿800,000 equiv). Begin EUR→THB transfer plan.' },
+    { task: 'Dutch GP medical certificates (English)', category: 'visa', owner: 'Both', due: 'Sep 2026', deadlineDate: '2026-09-30', status: 'not-started', notes: 'Valid only 3 months — time carefully. One per person. Must confirm no prohibited diseases.' },
+    { task: 'Apply for VOG from Justis.nl', category: 'visa', owner: 'Both', due: 'Oct 2026', deadlineDate: '2026-10-31', status: 'not-started', notes: 'Certificate of Good Conduct. ~€41. Valid 3 months. Time for Embassy appointment window.' },
+    { task: 'Book Thai Embassy appointment (The Hague)', category: 'visa', owner: 'Both', due: 'Nov 2026', deadlineDate: '2026-11-30', status: 'not-started', notes: 'Non-OA visa application. Book 6–8 weeks ahead — slots limited. haag.thaiembassy.org' },
+    { task: 'Give notice to Dutch health insurer', category: 'nl-exit', owner: 'Both', due: 'Nov–Dec 2026', deadlineDate: '2026-12-31', status: 'not-started', notes: '1 month notice. Cancel as of departure date. Zorgtoeslag also ends on deregistration.' },
+    { task: 'Notify Dutch bank(s) of emigration', category: 'finance', owner: 'Both', due: 'Jan 2027', deadlineDate: '2027-01-31', status: 'not-started', notes: 'Confirm which accounts stay open. Arrange international SWIFT transfer capability.' },
+    { task: 'Get ANWB International Driving Permits', category: 'transport', owner: 'Both', due: 'Jan 2027', deadlineDate: '2027-01-31', status: 'not-started', notes: '~€16 each. Visit ANWB with Dutch licence + passport photo. Valid 1 year.' },
+    { task: 'Book Hua Hin Airbnb for April arrival', category: 'housing', owner: 'Both', due: 'Jan–Feb 2027', deadlineDate: '2027-02-28', status: 'not-started', notes: 'Min 4-week booking. Central Hua Hin or Khao Takiab recommended. Budget ฿25,000–฿45,000/month.' },
+    { task: 'Uitschrijven bij gemeente (deregistration)', category: 'nl-exit', owner: 'Both', due: 'Feb 2027', deadlineDate: '2027-02-28', status: 'not-started', notes: 'Submit from 4 weeks before departure. In person (Amsterdam) or by post. Bring Thai address.' },
+    { task: 'Cancel Dutch toeslagen (benefits)', category: 'nl-exit', owner: 'Both', due: 'Feb 2027', deadlineDate: '2027-02-28', status: 'not-started', notes: 'Zorgtoeslag, huurtoeslag — end as of deregistration date. Via Mijn Belastingdienst.' },
+    { task: 'Notify SVB re: AOW / pension payments abroad', category: 'nl-exit', owner: 'Both', due: 'Feb 2027', deadlineDate: '2027-02-28', status: 'blocked', notes: 'If entitled to AOW, arrange international payment. Register Thai bank details with SVB.' },
+    { task: 'Cancel Dutch utilities & subscriptions', category: 'nl-exit', owner: 'Both', due: 'Feb–Mar 2027', deadlineDate: '2027-03-31', status: 'not-started', notes: 'Electricity, gas, water, internet, TV. Give required notice periods. Final meter readings.' },
+    { task: 'Set up PostNL mail forwarding (6–12 months)', category: 'logistics', owner: 'Both', due: 'Mar 2027', deadlineDate: '2027-03-31', status: 'not-started', notes: 'Forward to trusted NL contact or virtual mailbox. Register Thai address in BRP at deregistration.' },
+    { task: 'Arrange power of attorney in Netherlands', category: 'logistics', owner: 'Both', due: 'Mar 2027', deadlineDate: '2027-03-31', status: 'not-started', notes: 'For trusted NL contact to handle remaining Dutch matters after departure.' },
+    { task: 'Start Hua Hin long-term property search online', category: 'housing', owner: 'Both', due: 'Mar 2027', deadlineDate: '2027-03-31', status: 'not-started', notes: 'FazWaz.com, DDProperty.com, ThailandProperty.com. Shortlist for Month 1 viewing.' },
+    { task: 'DEPART Netherlands — Arrive Hua Hin', category: 'settle', owner: 'Both', due: 'Apr 2027', deadlineDate: '2027-04-01', status: 'not-started', notes: 'Arrive on Non-OA visas. Check-in to Airbnb accommodation.' },
+    { task: 'Open Bangkok Bank account', category: 'finance', owner: 'Both', due: "Week 1 (Apr '27)", deadlineDate: '2027-04-07', status: 'not-started', notes: 'Bring: passport, entry stamp, hotel letter. Some branches need TM6. Call ahead to confirm docs.' },
+    { task: 'Transfer ฿800,000 to Thai account via Wise', category: 'finance', owner: 'Both', due: "Week 1–2 (Apr '27)", deadlineDate: '2027-04-14', status: 'not-started', notes: 'Keep transfer receipt. Funds must remain in account for 3 months before renewal (฿400k min after).' },
+    { task: 'Confirm landlord files TM30', category: 'visa', owner: 'Landlord', due: "Week 1–2 (Apr '27)", deadlineDate: '2027-04-14', status: 'not-started', notes: 'Landlord must report foreign national within 24 hrs of arrival. Collect TM30 receipt.' },
+    { task: 'Book DLT appointment (driving licence)', category: 'transport', owner: 'Both', due: "Week 2–3 (Apr '27)", deadlineDate: '2027-04-21', status: 'not-started', notes: 'Via DLT app. Bring: Dutch licence, passport, residence cert from Immigration, TM30 receipt.' },
+    { task: 'Find & sign long-term rental contract', category: 'housing', owner: 'Both', due: 'Month 1–2', deadlineDate: '2027-05-31', status: 'not-started', notes: 'Target: signed by end of May. Negotiate: PEA electricity rate, TM30 clause, English contract.' },
+    { task: 'Set up True Move H fibre broadband', category: 'housing', owner: 'Both', due: "Month 2 (May '27)", deadlineDate: '2027-05-31', status: 'not-started', notes: 'Bring passport + rental contract. 100–300 Mbps plans ฿600–฿800/month.' },
+    { task: 'First 90-day immigration report', category: 'visa', owner: 'Both', due: "Month 3 (Jul '27)", deadlineDate: '2027-07-31', status: 'not-started', notes: 'In person at Hua Hin Immigration or online via immigration.go.th. Fine ฿5,000 if missed.' },
+    { task: 'Annual O-A visa renewal', category: 'visa', owner: 'Both', due: 'Apr 2028', deadlineDate: '2028-04-30', status: 'not-started', notes: 'Need: bank letter ฿800,000, insurance cert, passport, photos, ฿1,900 fee, TM7 form.' },
+    { task: 'File Dutch M-Form (2027 emigration year)', category: 'nl-tax', owner: 'Both', due: 'May–Jul 2028', deadlineDate: '2028-07-31', status: 'not-started', notes: 'Via DigiD on Mijn Belastingdienst. Covers Jan 2027–departure date. Use specialist.' },
+  ];
+
+  const DEFAULT_DATA = RAW_DATA.map((m, i) => ({ id: 'seed-' + i, log: [], ...m }));
+
+  let data = loadData();
+  let mode = 'home'; // home | alerts | categories | all
+  let activeCategory = null;
+  let collapsedGroups = new Set();
+  let openLogIds = new Set();
+  let editingId = null;
+  let calMonth = new Date();
+
+  function loadData() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return normalize(JSON.parse(raw)); }
+    catch (e) {}
+    return DEFAULT_DATA;
+  }
+  function normalize(arr) { return (arr || []).map(m => ({ deadlineDate: '', log: [], owner: '', ...m })); }
+  function saveData() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.error(e); } }
+  function uid() { return 'm-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7); }
+  function cat(id) { return CATEGORIES.find(c => c.id === id) || { label: id, icon: '•' }; }
+  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str || ''; return d.innerHTML; }
+  function todayISO() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function fmtDateShort(iso) {
+    if (!iso) return '';
+    const [y,m,d] = iso.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+  function gcalUrl(m) {
+    if (!m.deadlineDate) return null;
+    const start = m.deadlineDate.replace(/-/g, '');
+    const [y, mo, d] = m.deadlineDate.split('-').map(Number);
+    const endDt = new Date(y, mo - 1, d + 1);
+    const end = endDt.getFullYear() + String(endDt.getMonth()+1).padStart(2,'0') + String(endDt.getDate()).padStart(2,'0');
+    const text = encodeURIComponent(m.task);
+    const details = encodeURIComponent(cat(m.category).label + (m.notes ? ' — ' + m.notes : ''));
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}`;
+  }
+
+  const fCategorySelect = document.getElementById('f-category');
+  CATEGORIES.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.label;
+    fCategorySelect.appendChild(opt);
+  });
+
+  /* ---------- Nav ---------- */
+  function setMode(m, category) {
+    mode = m;
+    activeCategory = category || null;
+    document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+    if (m === 'home') { document.getElementById('nav-home').classList.add('active'); }
+    else if (m === 'alerts') document.getElementById('nav-alerts').classList.add('active');
+    else if (m === 'categories') document.getElementById('nav-categories').classList.add('active');
+    else if (m === 'all') document.getElementById('nav-all').classList.add('active');
+    render();
+  }
+  document.getElementById('nav-home').addEventListener('click', () => setMode('home'));
+  document.getElementById('nav-alerts').addEventListener('click', () => setMode('alerts'));
+  document.getElementById('nav-categories').addEventListener('click', () => setMode('categories'));
+  document.getElementById('nav-all').addEventListener('click', () => setMode('all'));
+  document.getElementById('nav-add').addEventListener('click', () => openAdd());
+
+  /* ---------- Status pills filter (also acts as nav within "all") ---------- */
+  let statusFilter = null;
+  document.querySelectorAll('.status-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const s = btn.dataset.status;
+      statusFilter = (statusFilter === s) ? null : s;
+      document.querySelectorAll('.status-pill').forEach(b => b.classList.remove('active'));
+      if (statusFilter) btn.classList.add('active');
+      mode = 'all'; activeCategory = null;
+      document.querySelectorAll('.rail-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('nav-all').classList.add('active');
+      render();
+    });
+  });
+
+  /* ---------- Calendar ---------- */
+  function renderCalendar() {
+    const y = calMonth.getFullYear(), m = calMonth.getMonth();
+    document.getElementById('cal-title').textContent = calMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d => {
+      const el = document.createElement('div'); el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el);
+    });
+    const firstDay = new Date(y, m, 1);
+    let startOffset = firstDay.getDay() - 1; if (startOffset < 0) startOffset = 6;
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const today = todayISO();
+    const deadlineDays = new Set(data.filter(x => x.deadlineDate).map(x => x.deadlineDate));
+
+    for (let i = 0; i < startOffset; i++) {
+      const pad = document.createElement('div'); pad.className = 'cal-day pad'; grid.appendChild(pad);
+    }
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = y + '-' + String(m+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+      const cell = document.createElement('div');
+      cell.className = 'cal-day' + (iso === today ? ' today' : '');
+      cell.textContent = day;
+      if (deadlineDays.has(iso)) {
+        const mark = document.createElement('span'); mark.className = 'mark'; cell.appendChild(mark);
+      }
+      grid.appendChild(cell);
+    }
+  }
+  document.getElementById('cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCalendar(); });
+  document.getElementById('cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCalendar(); });
+
+  /* ---------- Deadline card ---------- */
+  function renderDeadlineCard() {
+    const today = todayISO();
+    const next = data.filter(m => m.status !== 'done' && m.deadlineDate && m.deadlineDate >= today)
+      .sort((a, b) => a.deadlineDate.localeCompare(b.deadlineDate))[0];
+    const card = document.getElementById('deadline-card');
+    if (!next) {
+      card.innerHTML = '<div class="deadline-empty">No upcoming dated deadlines. Add a date to a milestone to see a countdown here.</div>';
+      return;
+    }
+    const d1 = new Date(today), d2 = new Date(next.deadlineDate);
+    const daysUntil = Math.round((d2 - d1) / 86400000);
+    const pct = Math.max(0, Math.min(1, 1 - daysUntil / 60));
+    const circ = 213.5;
+    const c = cat(next.category);
+    card.innerHTML = `
+      <div class="ring-wrap">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle class="ring-bg" cx="44" cy="44" r="34"></circle>
+          <circle class="ring-fg" cx="44" cy="44" r="34" stroke-dasharray="${circ}" stroke-dashoffset="${circ - circ * pct}"></circle>
+        </svg>
+        <div class="ring-center">
+          <span class="n">${daysUntil}</span>
+          <span class="u">days</span>
+        </div>
+      </div>
+      <div class="deadline-info">
+        <p class="d-task">${c.icon} ${escapeHtml(next.task)}</p>
+        <div class="d-date">${fmtDate(next.deadlineDate)}</div>
+      </div>
+    `;
+  }
+
+  /* ---------- Status counts ---------- */
+  function renderStatusCounts() {
+    Object.keys(STATUS_META).forEach(s => {
+      document.getElementById('count-' + s).textContent = data.filter(m => m.status === s).length;
+    });
+    const blockedCount = data.filter(m => m.status === 'blocked').length;
+    const today = todayISO();
+    const overdueCount = data.filter(m => m.status !== 'done' && m.status !== 'blocked' && m.deadlineDate && m.deadlineDate < today).length;
+    const dot = document.getElementById('rail-dot');
+    dot.style.display = (blockedCount + overdueCount) > 0 ? '' : 'none';
+  }
+
+  /* ---------- Todo panel ---------- */
+  function getFilteredItems() {
+    let items = data.slice();
+    if (mode === 'categories' && activeCategory) items = items.filter(m => m.category === activeCategory);
+    if (mode === 'alerts') {
+      const today = todayISO();
+      items = items.filter(m => m.status === 'blocked' || (m.status !== 'done' && m.deadlineDate && m.deadlineDate < today));
+    }
+    if (statusFilter) items = items.filter(m => m.status === statusFilter);
+    return items;
+  }
+
+  function renderTodoTitle() {
+    const title = document.getElementById('todo-title');
+    if (mode === 'alerts') title.textContent = 'Critical alerts';
+    else if (mode === 'categories' && activeCategory) title.textContent = cat(activeCategory).label;
+    else if (statusFilter) title.textContent = STATUS_META[statusFilter].label;
+    else title.textContent = 'Milestones';
+  }
+
+  function renderCategoryChooser() {
+    const container = document.getElementById('groups-container');
+    container.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const items = data.filter(m => m.category === c.id);
+      if (items.length === 0) return;
+      const done = items.filter(m => m.status === 'done').length;
+      const row = document.createElement('button');
+      row.className = 'item-row';
+      row.style.width = '100%'; row.style.textAlign = 'left'; row.style.cursor = 'pointer'; row.style.border = 'none';
+      row.innerHTML = `
+        <div class="item-check" style="border-color: rgba(18,22,29,0.15); background:#fff; color:var(--ink-faint); font-weight:700; font-size:11px;">${c.icon}</div>
+        <div class="item-body">
+          <p class="item-task">${c.label}</p>
+          <p class="item-note">${done} of ${items.length} done</p>
+        </div>
+      `;
+      row.addEventListener('click', () => { activeCategory = c.id; document.querySelectorAll('.rail-btn').forEach(b=>b.classList.remove('active')); document.getElementById('nav-categories').classList.add('active'); mode = 'categories'; render(); });
+      container.appendChild(row);
+    });
+  }
+
+  function renderGroups() {
+    const container = document.getElementById('groups-container');
+    container.innerHTML = '';
+    const items = getFilteredItems();
+    document.getElementById('todo-count').textContent = items.length + (items.length === 1 ? ' item' : ' items');
+
+    if (items.length === 0) {
+      container.innerHTML = '<div class="empty-note">Nothing here.</div>';
+      return;
+    }
+
+    // Group by status, in STATUS_ORDER
+    STATUS_ORDER.forEach(s => {
+      const groupItems = items.filter(m => m.status === s);
+      if (groupItems.length === 0) return;
+      const collapsed = collapsedGroups.has(s);
+
+      const block = document.createElement('div');
+      block.className = 'group-block';
+      const toggle = document.createElement('button');
+      toggle.className = 'group-toggle' + (collapsed ? ' collapsed' : '');
+      toggle.innerHTML = `<span class="chev">▾</span> ${STATUS_META[s].label} <span class="g-count">${groupItems.length}</span>`;
+      toggle.addEventListener('click', () => {
+        if (collapsedGroups.has(s)) collapsedGroups.delete(s); else collapsedGroups.add(s);
+        render();
+      });
+      block.appendChild(toggle);
+
+      const itemsWrap = document.createElement('div');
+      itemsWrap.className = 'group-items' + (collapsed ? ' collapsed' : '');
+      groupItems.forEach(m => itemsWrap.appendChild(renderItemRow(m)));
+      block.appendChild(itemsWrap);
+
+      container.appendChild(block);
+    });
+  }
+
+  function renderItemRow(m) {
+    const c = cat(m.category);
+    const today = todayISO();
+    const isOverdue = m.deadlineDate && m.deadlineDate < today && m.status !== 'done';
+    const gurl = gcalUrl(m);
+    const logCount = (m.log || []).length;
+    const logOpen = openLogIds.has(m.id);
+    const showOwner = m.owner && m.owner.trim() && m.owner.trim().toLowerCase() !== 'both';
+    const checkGlyph = m.status === 'done' ? '✓' : m.status === 'blocked' ? '✕' : '';
+
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="item-row">
+        <button class="item-check ${m.status}" title="Cycle status">${checkGlyph}</button>
+        <div class="item-body">
+          <div class="item-tag">${c.icon} ${c.label}${showOwner ? `<span class="owner-chip">${escapeHtml(m.owner)}</span>` : ''}</div>
+          <p class="item-task${m.status === 'done' ? ' done' : ''}">${escapeHtml(m.task)}</p>
+          ${m.notes ? `<p class="item-note">${escapeHtml(m.notes)}</p>` : ''}
+          <button class="item-log-toggle" data-action="toggle-log">🗒 Notes${logCount ? ' (' + logCount + ')' : ''}</button>
+          <div class="log-panel${logOpen ? ' open' : ''}" data-log-panel>
+            ${logCount ? m.log.map(e => `<div class="log-entry"><div class="log-ts">${escapeHtml(e.ts)}</div><div>${escapeHtml(e.text)}</div></div>`).join('') : '<div class="log-empty">No notes yet.</div>'}
+            <div class="log-add">
+              <textarea rows="1" placeholder="Add a note…" data-log-input></textarea>
+              <button type="button" data-action="add-log">Add</button>
+            </div>
+          </div>
+        </div>
+        <div class="item-side">
+          <span class="item-date${isOverdue ? ' overdue' : ''}">${m.deadlineDate ? fmtDateShort(m.deadlineDate) : escapeHtml(m.due || '')}</span>
+          <div class="item-actions">
+            ${gurl ? `<a class="icon-btn" href="${gurl}" target="_blank" rel="noopener" title="Add to Google Calendar">📅</a>` : ''}
+            <button class="icon-btn" data-action="edit" title="Edit">✎</button>
+            <button class="icon-btn" data-action="delete" title="Delete">✕</button>
+          </div>
+        </div>
+      </div>
+    `;
+    row.querySelector('.item-check').addEventListener('click', () => cycleStatus(m.id));
+    row.querySelector('[data-action="edit"]').addEventListener('click', () => openEdit(m.id));
+    row.querySelector('[data-action="delete"]').addEventListener('click', () => deleteMilestone(m.id));
+    row.querySelector('[data-action="toggle-log"]').addEventListener('click', () => {
+      if (openLogIds.has(m.id)) openLogIds.delete(m.id); else openLogIds.add(m.id);
+      row.querySelector('[data-log-panel]').classList.toggle('open');
+    });
+    row.querySelector('[data-action="add-log"]').addEventListener('click', () => {
+      const ta = row.querySelector('[data-log-input]');
+      const text = ta.value.trim();
+      if (!text) return;
+      const ms = data.find(x => x.id === m.id);
+      if (!ms.log) ms.log = [];
+      ms.log.unshift({ text, ts: new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) });
+      openLogIds.add(m.id);
+      saveData();
+      render();
+    });
+    return row;
+  }
+
+  const STATUS_CYCLE = ['not-started', 'in-progress', 'done', 'blocked'];
+  function cycleStatus(id) {
+    const m = data.find(m => m.id === id);
+    if (!m) return;
+    m.status = STATUS_CYCLE[(STATUS_CYCLE.indexOf(m.status) + 1) % STATUS_CYCLE.length];
+    saveData(); render();
+  }
+  function deleteMilestone(id) { data = data.filter(m => m.id !== id); saveData(); render(); }
+
+  /* ---------- Quick add ---------- */
+  const quickAddInput = document.getElementById('quick-add-input');
+  quickAddInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const task = quickAddInput.value.trim();
+      if (!task) return;
+      data.push({
+        id: uid(), task,
+        category: (mode === 'categories' && activeCategory) ? activeCategory : CATEGORIES[0].id,
+        owner: '', due: '', deadlineDate: '', status: 'not-started', notes: '', log: []
+      });
+      quickAddInput.value = '';
+      saveData(); render();
+    }
+  });
+
+  /* ---------- Render root ---------- */
+  function render() {
+    renderStatusCounts();
+    renderDeadlineCard();
+    renderCalendar();
+    renderTodoTitle();
+    document.querySelectorAll('.status-pill').forEach(b => b.classList.toggle('active', b.dataset.status === statusFilter));
+    if (mode === 'categories' && !activeCategory) renderCategoryChooser();
+    else renderGroups();
+  }
+
+  /* ---------- Modal ---------- */
+  const overlay = document.getElementById('modal-overlay');
+  const fTask = document.getElementById('f-task');
+  const fCategory = document.getElementById('f-category');
+  const fOwner = document.getElementById('f-owner');
+  const fDue = document.getElementById('f-due');
+  const fDeadline = document.getElementById('f-deadline');
+  const fStatus = document.getElementById('f-status');
+  const fNotes = document.getElementById('f-notes');
+  const modalTitle = document.getElementById('modal-title');
+  const gcalField = document.getElementById('gcal-field');
+  const gcalLinkEl = document.getElementById('gcal-link');
+
+  function updateGcalPreview() {
+    if (fDeadline.value && fTask.value.trim()) {
+      const tmp = { task: fTask.value.trim(), category: fCategory.value, notes: fNotes.value.trim(), deadlineDate: fDeadline.value };
+      gcalLinkEl.href = gcalUrl(tmp);
+      gcalField.style.display = '';
+    } else { gcalField.style.display = 'none'; }
+  }
+  [fDeadline, fTask, fNotes, fCategory].forEach(el => el.addEventListener('input', updateGcalPreview));
+
+  function openAdd() {
+    editingId = null;
+    modalTitle.textContent = 'Add milestone';
+    fTask.value = ''; fDue.value = ''; fDeadline.value = ''; fNotes.value = ''; fOwner.value = '';
+    fStatus.value = 'not-started';
+    fCategory.value = (mode === 'categories' && activeCategory) ? activeCategory : CATEGORIES[0].id;
+    updateGcalPreview();
+    overlay.classList.add('open'); fTask.focus();
+  }
+  function openEdit(id) {
+    const m = data.find(m => m.id === id); if (!m) return;
+    editingId = id;
+    modalTitle.textContent = 'Edit milestone';
+    fTask.value = m.task; fDue.value = m.due || ''; fDeadline.value = m.deadlineDate || ''; fNotes.value = m.notes || ''; fOwner.value = m.owner || '';
+    fStatus.value = m.status; fCategory.value = m.category;
+    updateGcalPreview();
+    overlay.classList.add('open'); fTask.focus();
+  }
+  function closeModal() { overlay.classList.remove('open'); editingId = null; }
+  function saveModal() {
+    const task = fTask.value.trim();
+    if (!task) { fTask.focus(); return; }
+    if (editingId) {
+      const m = data.find(m => m.id === editingId);
+      Object.assign(m, { task, category: fCategory.value, owner: fOwner.value.trim(), due: fDue.value.trim(), deadlineDate: fDeadline.value, status: fStatus.value, notes: fNotes.value.trim() });
+    } else {
+      data.push({ id: uid(), task, category: fCategory.value, owner: fOwner.value.trim(), due: fDue.value.trim(), deadlineDate: fDeadline.value, status: fStatus.value, notes: fNotes.value.trim(), log: [] });
+    }
+    saveData(); closeModal(); render();
+  }
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-save').addEventListener('click', saveModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal(); });
+
+  render();
+})();
+</script>
+</body>
+</html>
