@@ -8,5 +8,6 @@ pages:
   artifacts:
     paths:
       - public
+  pages: true
   only:
-    - main
+    - claude/relocation-tracker-build-7kjfvn
