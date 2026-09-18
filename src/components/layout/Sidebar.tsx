@@ -4,6 +4,7 @@ import {
   CreditCard,
   BarChart3,
   Compass,
+  Plane,
   X,
 } from 'lucide-react';
 
@@ -12,6 +13,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/subscriptions', icon: CreditCard, label: 'My Subscriptions' },
   { to: '/insights', icon: BarChart3, label: 'Usage & Insights' },
+  { to: '/relocation', icon: Plane, label: 'Relocation Tracker' },
 ];
 
 interface SidebarProps {

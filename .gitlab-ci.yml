@@ -1,11 +1,14 @@
 pages:
   stage: deploy
+  image: node:20
   script:
-    - mkdir .public
-    - cp -r * .public
-    - mv .public public
+    - npm ci
+    - npm run build
+    - rm -rf public
+    - mv dist public
   artifacts:
     paths:
       - public
+  pages: true
   only:
-    - main
+    - claude/relocation-tracker-build-7kjfvn

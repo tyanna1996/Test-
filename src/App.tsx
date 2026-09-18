@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Subscriptions from './pages/Subscriptions';
 import Insights from './pages/Insights';
 import Discover from './pages/Discover';
+import Relocation from './pages/Relocation';
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="insights" element={<Insights />} />
+          <Route path="relocation" element={<Relocation />} />
         </Route>
       </Routes>
     </HashRouter>
