@@ -67,11 +67,23 @@ export default function Discover() {
         <div style={{ flex: 1, textAlign: 'center', fontFamily: fMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(243,238,218,0.38)' }}>
           Stream smarter. Not harder.
         </div>
-        {/* MONO. → goes to Dashboard */}
-        <button
-          onClick={() => navigate('/dashboard')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fSer, fontSize: 26, fontWeight: 400, color: BG, letterSpacing: '-0.02em', lineHeight: 1, padding: 0 }}
-        >MONO.</button>
+        {/* Right: app page links + MONO. wordmark */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+          {([['Dashboard','/dashboard'],['Subscriptions','/subscriptions'],['Insights','/insights']] as [string,string][]).map(([label, path], i) => (
+            <span key={path} style={{ display: 'flex', alignItems: 'center' }}>
+              <button onClick={() => navigate(path)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fSans, fontSize: 12, fontWeight: 400, color: BG, opacity: 0.5, padding: '0 2px', letterSpacing: '0.01em', transition: 'opacity 150ms' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.5'; }}
+              >{label}</button>
+              {i < 2 && <span style={{ color: 'rgba(243,238,218,0.22)', margin: '0 8px', fontSize: 12 }}>|</span>}
+            </span>
+          ))}
+          <span style={{ color: 'rgba(243,238,218,0.22)', margin: '0 16px 0 12px', fontSize: 12 }}>·</span>
+          <button
+            onClick={() => navigate('/dashboard')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fSer, fontSize: 26, fontWeight: 400, color: BG, letterSpacing: '-0.02em', lineHeight: 1, padding: 0 }}
+          >MONO.</button>
+        </div>
       </nav>
 
       {/* ── Centred content column ───────────────────────────────────────────── */}
