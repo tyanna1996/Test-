@@ -1,38 +1,69 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
+import { PODCASTS, AUDIOBOOKS, PLATFORM_COLORS } from '../data/content';
+import type { Podcast, Audiobook } from '../data/content';
 
-// ── Design tokens — matching the Framer original exactly ──────────────────────
-const BG    = '#F3EEDA';   // warm cream paper
-const INK   = '#23003F';   // deep purple ink
-const MUTED = '#5C6448';   // muted green-grey
-const RULE  = '#C8C5B0';   // hairline rule colour
-const LAV   = '#9A98CC';   // muted lavender for featured podcast card
+const BG    = '#F3EEDA';
+const INK   = '#23003F';
+const MUTED = '#5C6448';
+const RULE  = '#C8C5B0';
+const LAV   = '#9A98CC';
 
 const fSer  = "'DM Serif Display', Georgia, serif";
 const fMono = "'DM Mono', 'Courier New', monospace";
 const fSans = "'DM Sans', system-ui, sans-serif";
 
-// ── Static data — same podcasts shown in the Framer prototype ─────────────────
-interface Pod { id: string; title: string; author: string; image: string; badge: 'FREE' | 'TRENDING'; }
-
-const GRID_PODS: Pod[] = [
-  { id:'1', title:'The Chairish Podcast',   author:'Chairish Inc.',         image:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts112/v4/8f/be/53/8fbe53ca-dbf7-c89d-29d8-744bdfbe4de1/mza_11765802649450929601.jpeg/600x600bb.jpg', badge:'FREE'     },
-  { id:'2', title:'Design Nerds Anonymous', author:'ThinkLab and SURROUND', image:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/74/ac/dc/74acdc72-eda3-1e50-3b49-ffdb8e0cb7bb/mza_15232146626597352423.jpeg/600x600bb.jpg', badge:'TRENDING' },
-  { id:'3', title:'Design Better',          author:'The Curiosity Dept.',   image:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/b1/49/70/b149707b-416e-a9e9-d054-34591c915424/mza_10163662345082686528.jpeg/600x600bb.jpg', badge:'FREE'     },
-  { id:'4', title:'How to Decorate',        author:'Ballard Designs',       image:'https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/94/0f/08/940f0802-6803-b3d8-db6a-3c3a8d371d3e/mza_6411123265571463430.jpg/600x600bb.jpg',  badge:'TRENDING' },
-];
-
-const CATS  = ['All', 'True Crime', 'News', 'History', 'Business', 'Culture'];
 const SVCS  = ['Audible', 'Storytel', 'Podimo', 'Spotify'];
-const NTABS = ['Discover', 'Podcasts', 'Audiobooks'];
+const NTABS = ['Discover', 'Podcasts', 'Audiobooks'] as const;
 
-// ── Component ─────────────────────────────────────────────────────────────────
+const POD_CATS  = ['All', 'True Crime', 'News', 'Business', 'History', 'Culture', 'Design'];
+const BOOK_CATS = ['All', 'Fiction', 'Biography', 'History', 'Business', 'Science', 'Self-Help'];
+
+const BADGE_STYLE: Record<string, { border: string; color: string }> = {
+  FREE:      { border: '#16a34a', color: '#16a34a' },
+  TRENDING:  { border: '#d97706', color: '#d97706' },
+  EXCLUSIVE: { border: '#7c3aed', color: '#7c3aed' },
+  NEW:       { border: '#0369a1', color: '#0369a1' },
+  AWARD:     { border: '#b45309', color: '#b45309' },
+};
+
+function PlatformChips({ platforms }: { platforms: string[] }) {
+  return (
+    <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 7 }}>
+      {platforms.map(p => (
+        <span key={p} style={{
+          fontFamily: fMono, fontSize: 8, letterSpacing: '0.07em', fontWeight: 700,
+          padding: '2px 6px', borderRadius: 4,
+          background: (PLATFORM_COLORS[p] ?? '#888') + '1A',
+          color: PLATFORM_COLORS[p] ?? '#888',
+          border: `1px solid ${(PLATFORM_COLORS[p] ?? '#888')}44`,
+        }}>
+          {p}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function CoverImg({ src, alt, style }: { src: string; alt: string; style?: React.CSSProperties }) {
+  const [err, setErr] = useState(false);
+  if (err) {
+    return (
+      <div style={{ background: `${INK}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', ...style }}>
+        <span style={{ fontFamily: fSer, fontSize: 11, color: MUTED, opacity: 0.5 }}>{alt[0]}</span>
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} style={style} onError={() => setErr(true)} />;
+}
+
 export default function Discover() {
   const navigate = useNavigate();
   const [q,       setQ]       = useState('');
-  const [cat,     setCat]     = useState('All');
-  const [navTab,  setNavTab]  = useState('Discover');
+  const [navTab,  setNavTab]  = useState<typeof NTABS[number]>('Discover');
+  const [podCat,  setPodCat]  = useState('All');
+  const [bookCat, setBookCat] = useState('All');
   const [userSvcs, setUserSvcs] = useState<string[]>(() => {
     try { const s = localStorage.getItem('mono_subs'); return s ? JSON.parse(s) as string[] : [...SVCS]; }
     catch { return [...SVCS]; }
@@ -46,12 +77,34 @@ export default function Discover() {
     });
   }, []);
 
+  const filteredPods: Podcast[] = useMemo(() => {
+    let list = PODCASTS;
+    if (podCat !== 'All') list = list.filter(p => p.category === podCat);
+    if (q.trim()) {
+      const lq = q.toLowerCase();
+      list = list.filter(p => p.title.toLowerCase().includes(lq) || p.author.toLowerCase().includes(lq));
+    }
+    return list;
+  }, [podCat, q]);
+
+  const filteredBooks: Audiobook[] = useMemo(() => {
+    let list = AUDIOBOOKS;
+    if (bookCat !== 'All') list = list.filter(b => b.category === bookCat);
+    if (q.trim()) {
+      const lq = q.toLowerCase();
+      list = list.filter(b => b.title.toLowerCase().includes(lq) || b.author.toLowerCase().includes(lq));
+    }
+    return list;
+  }, [bookCat, q]);
+
+  const showPods  = navTab === 'Discover' || navTab === 'Podcasts';
+  const showBooks = navTab === 'Discover' || navTab === 'Audiobooks';
+
   return (
     <div style={{ minHeight: '100vh', background: BG, color: INK, fontFamily: fSans }}>
 
       {/* ── Dark editorial nav ───────────────────────────────────────────────── */}
       <nav style={{ background: INK, height: 52, display: 'flex', alignItems: 'center', padding: '0 max(24px, env(safe-area-inset-left,0px))', position: 'sticky', top: 0, zIndex: 100 }}>
-        {/* Tab group */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           {NTABS.map((t, i) => (
             <span key={t} style={{ display: 'flex', alignItems: 'center' }}>
@@ -63,11 +116,9 @@ export default function Discover() {
             </span>
           ))}
         </div>
-        {/* Centre tagline */}
         <div style={{ flex: 1, textAlign: 'center', fontFamily: fMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(243,238,218,0.38)' }}>
           Stream smarter. Not harder.
         </div>
-        {/* Right: app page links + MONO. wordmark */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {([['Dashboard','/dashboard'],['Subscriptions','/subscriptions'],['Insights','/insights']] as [string,string][]).map(([label, path], i) => (
             <span key={path} style={{ display: 'flex', alignItems: 'center' }}>
@@ -79,17 +130,14 @@ export default function Discover() {
             </span>
           ))}
           <span style={{ color: 'rgba(243,238,218,0.22)', margin: '0 16px 0 12px', fontSize: 12 }}>·</span>
-          <button
-            onClick={() => navigate('/dashboard')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fSer, fontSize: 26, fontWeight: 400, color: BG, letterSpacing: '-0.02em', lineHeight: 1, padding: 0 }}
-          >MONO.</button>
+          <button onClick={() => navigate('/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fSer, fontSize: 26, fontWeight: 400, color: BG, letterSpacing: '-0.02em', lineHeight: 1, padding: 0 }}>MONO.</button>
         </div>
       </nav>
 
-      {/* ── Centred content column ───────────────────────────────────────────── */}
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
       <div style={{ padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
 
-        {/* Subtitle + Search */}
+        {/* Search */}
         <div style={{ padding: '28px 0 20px' }}>
           <p style={{ fontSize: 13, lineHeight: 1.65, color: MUTED, margin: '0 0 16px' }}>
             Find a podcast or audiobook you'll love. Search below, or explore our picks.
@@ -97,16 +145,12 @@ export default function Discover() {
           <div style={{ position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: MUTED, pointerEvents: 'none' }} />
             <input
-              type="search"
-              value={q}
-              onChange={e => setQ(e.target.value)}
+              type="search" value={q} onChange={e => setQ(e.target.value)}
               placeholder="Search podcasts, audiobooks, or creators…"
               style={{ width: '100%', border: `1.5px solid ${RULE}`, borderRadius: 999, padding: '12px 44px', fontSize: 13, fontFamily: fSans, background: 'rgba(255,252,245,0.7)', color: INK, outline: 'none', boxSizing: 'border-box' }}
             />
             {q && (
-              <button onClick={() => setQ('')} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: MUTED }}>
-                Clear
-              </button>
+              <button onClick={() => setQ('')} style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: MUTED }}>Clear</button>
             )}
           </div>
         </div>
@@ -119,113 +163,178 @@ export default function Discover() {
               {s}
             </button>
           ))}
-          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED, padding: 0 }}>
-            Edit
-          </button>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: fMono, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED, padding: 0 }}>Edit</button>
         </div>
 
-        {/* ── "Worth your headphones." ─────────────────────────────────────── */}
-        <div style={{ paddingTop: 36 }}>
-          <h2 style={{ fontFamily: fSer, fontSize: 'clamp(36px,6vw,56px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.015em', margin: '0 0 24px' }}>
-            Worth your headphones.
-          </h2>
+        {/* ── Podcasts section ─────────────────────────────────────────────────── */}
+        {showPods && (
+          <div style={{ paddingTop: 36 }}>
+            <h2 style={{ fontFamily: fSer, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.015em', margin: '0 0 20px' }}>
+              Worth your headphones.
+            </h2>
 
-          {/* Category pills */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-            {CATS.map(c => (
-              <button key={c} onClick={() => setCat(c)} style={{ fontFamily: fSans, fontSize: 12, fontWeight: cat === c ? 700 : 400, padding: '7px 16px', borderRadius: 999, border: `1.5px solid ${cat === c ? INK : RULE}`, background: cat === c ? INK : 'transparent', color: cat === c ? BG : INK, cursor: 'pointer', transition: 'all 150ms' }}>
-                {c}
-              </button>
-            ))}
+            {/* Category pills */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+              {POD_CATS.map(c => (
+                <button key={c} onClick={() => setPodCat(c)} style={{ fontFamily: fSans, fontSize: 12, fontWeight: podCat === c ? 700 : 400, padding: '7px 16px', borderRadius: 999, border: `1.5px solid ${podCat === c ? INK : RULE}`, background: podCat === c ? INK : 'transparent', color: podCat === c ? BG : INK, cursor: 'pointer', transition: 'all 150ms' }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {/* 3-column podcast grid */}
+            {filteredPods.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: `1.5px solid ${RULE}`, borderRadius: 14, overflow: 'hidden', marginBottom: navTab === 'Discover' ? 52 : 64 }}>
+                {filteredPods.map((pod, i) => {
+                  const cols = 3;
+                  const isLastRow = i >= filteredPods.length - (filteredPods.length % cols || cols);
+                  const isLastCol = (i + 1) % cols === 0;
+                  const bs = BADGE_STYLE[pod.badge] ?? BADGE_STYLE.FREE;
+                  return (
+                    <div
+                      key={pod.id}
+                      style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '18px 20px', background: BG, borderRight: !isLastCol ? `1px solid ${RULE}` : 'none', borderBottom: !isLastRow ? `1px solid ${RULE}` : 'none', cursor: 'pointer', transition: 'background 120ms' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#EBE6D1'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = BG; }}
+                    >
+                      <CoverImg src={pod.image} alt={pod.title} style={{ width: 54, height: 54, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ marginBottom: 5 }}>
+                          <span style={{ fontFamily: fMono, fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 7px', borderRadius: 999, border: `1px solid ${bs.border}`, color: bs.color }}>
+                            {pod.badge}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pod.title}</div>
+                        <div style={{ fontSize: 11, color: MUTED, fontFamily: fMono, letterSpacing: '0.03em', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pod.author}</div>
+                        <PlatformChips platforms={pod.platforms} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ color: MUTED, fontFamily: fMono, fontSize: 12, padding: '32px 0 52px', letterSpacing: '0.04em' }}>No podcasts match.</p>
+            )}
           </div>
+        )}
 
-          {/* 2×2 podcast card grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: `1.5px solid ${RULE}`, borderRadius: 14, overflow: 'hidden', marginBottom: 52 }}>
-            {GRID_PODS.map((pod, i) => (
-              <div
-                key={pod.id}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', background: BG, borderRight: i % 2 === 0 ? `1px solid ${RULE}` : 'none', borderBottom: i < 2 ? `1px solid ${RULE}` : 'none', cursor: 'pointer', transition: 'background 120ms' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#EBE6D1'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = BG; }}
-              >
-                <img src={pod.image} alt={pod.title} style={{ width: 54, height: 54, borderRadius: 9, objectFit: 'cover', flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ marginBottom: 5 }}>
-                    <span style={{ fontFamily: fMono, fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999, border: `1px solid ${pod.badge === 'FREE' ? '#16a34a' : '#d97706'}`, color: pod.badge === 'FREE' ? '#16a34a' : '#d97706' }}>
-                      {pod.badge}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pod.title}</div>
-                  <div style={{ fontSize: 11, color: MUTED, fontFamily: fMono, letterSpacing: '0.03em', marginTop: 2 }}>{pod.author}</div>
+        {/* ── Audiobooks section ───────────────────────────────────────────────── */}
+        {showBooks && (
+          <div style={{ paddingTop: navTab === 'Discover' ? 0 : 36 }}>
+            <h2 style={{ fontFamily: fSer, fontSize: 'clamp(32px,5vw,52px)', fontWeight: 400, lineHeight: 1.08, letterSpacing: '-0.015em', margin: '0 0 20px' }}>
+              Listen to the world's best books.
+            </h2>
+
+            {/* Book category pills */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+              {BOOK_CATS.map(c => (
+                <button key={c} onClick={() => setBookCat(c)} style={{ fontFamily: fSans, fontSize: 12, fontWeight: bookCat === c ? 700 : 400, padding: '7px 16px', borderRadius: 999, border: `1.5px solid ${bookCat === c ? INK : RULE}`, background: bookCat === c ? INK : 'transparent', color: bookCat === c ? BG : INK, cursor: 'pointer', transition: 'all 150ms' }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+
+            {filteredBooks.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 64 }}>
+                {filteredBooks.map(book => {
+                  const bs = BADGE_STYLE[book.badge] ?? BADGE_STYLE.FREE;
+                  return (
+                    <div
+                      key={book.id}
+                      style={{ background: BG, border: `1.5px solid ${RULE}`, borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'box-shadow 150ms' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 20px rgba(35,0,63,0.10)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'; }}
+                    >
+                      <div style={{ position: 'relative' }}>
+                        <CoverImg src={book.image} alt={book.title}
+                          style={{ width: '100%', aspectRatio: '2/3', objectFit: 'cover', display: 'block' }} />
+                        <span style={{ position: 'absolute', top: 10, left: 10, fontFamily: fMono, fontSize: 8, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '3px 8px', borderRadius: 999, background: BG, color: bs.color, border: `1px solid ${bs.border}` }}>
+                          {book.badge}
+                        </span>
+                      </div>
+                      <div style={{ padding: '14px 14px 16px' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{book.title}</div>
+                        <div style={{ fontSize: 11, color: MUTED, fontFamily: fMono, letterSpacing: '0.03em', marginBottom: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{book.author}</div>
+                        <div style={{ fontSize: 10, color: MUTED, fontFamily: fMono, letterSpacing: '0.03em', marginBottom: 8 }}>{book.runtime}</div>
+                        <PlatformChips platforms={book.platforms} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p style={{ color: MUTED, fontFamily: fMono, fontSize: 12, padding: '32px 0 52px', letterSpacing: '0.04em' }}>No audiobooks match.</p>
+            )}
+          </div>
+        )}
+
+        {/* ── 01 / Podcast of the week (Discover tab only) ─────────────────── */}
+        {navTab === 'Discover' && (
+          <>
+            <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTED, marginBottom: 16 }}>
+              01&nbsp;/&nbsp;Podcast of the week
+            </div>
+            <div style={{ background: LAV, borderRadius: 16, display: 'grid', gridTemplateColumns: '1fr 220px', alignItems: 'stretch', overflow: 'hidden', marginBottom: 52 }}>
+              <div style={{ padding: '36px 36px' }}>
+                <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(35,0,63,0.5)', marginBottom: 16 }}>
+                  True Crime · audiochuck
+                </div>
+                <h3 style={{ fontFamily: fSer, fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 400, lineHeight: 1.08, color: INK, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
+                  Every Monday. A new obsession.
+                </h3>
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: 'rgba(35,0,63,0.65)', margin: '0 0 16px', maxWidth: '42ch' }}>
+                  Crime Junkie delivers a new true crime story every single week — no-nonsense, deeply researched, never sensationalised.
+                </p>
+                <div style={{ fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: 'rgba(35,0,63,0.5)', marginBottom: 8 }}>
+                  Available on
+                </div>
+                <PlatformChips platforms={['Spotify', 'Apple Podcasts', 'Amazon Music']} />
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 20 }}>
+                  <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 700, padding: '10px 20px', borderRadius: 999, background: INK, color: BG, border: 'none', cursor: 'pointer' }}>Play podcast</button>
+                  <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 500, padding: '10px 20px', borderRadius: 999, background: 'transparent', color: INK, border: `1.5px solid ${INK}`, cursor: 'pointer' }}>Subscribe</button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+              <CoverImg
+                src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/f3/de/6d/f3de6d4e-e6e1-440b-b3f3-9f1b37f3d0d1/mza_5260484491791012706.jpeg/600x600bb.jpg"
+                alt="Crime Junkie"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
 
-        {/* ── 01 / Podcast of the week ─────────────────────────────────────── */}
-        <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTED, marginBottom: 16 }}>
-          01&nbsp;/&nbsp;Podcast of the week
-        </div>
-        <div style={{ background: LAV, borderRadius: 16, display: 'grid', gridTemplateColumns: '1fr 220px', alignItems: 'stretch', overflow: 'hidden', marginBottom: 52 }}>
-          <div style={{ padding: '36px 36px' }}>
-            <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(12,19,8,0.5)', marginBottom: 16 }}>
-              Design & Culture
+            {/* ── 02 / Audiobook of the week ───────────────────────────────── */}
+            <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTED, marginBottom: 16 }}>
+              02&nbsp;/&nbsp;Audiobook of the year
             </div>
-            <h3 style={{ fontFamily: fSer, fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 400, lineHeight: 1.08, color: INK, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
-              A little curiosity. A whole new perspective.
-            </h3>
-            <p style={{ fontSize: 13, lineHeight: 1.65, color: 'rgba(12,19,8,0.65)', margin: '0 0 16px', maxWidth: '42ch' }}>
-              Go beyond the obvious with Design Better. Big ideas, fascinating people, and the stories behind the things we love.
-            </p>
-            <div style={{ fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: 'rgba(12,19,8,0.5)', marginBottom: 22 }}>
-              Design Better&nbsp;·&nbsp;Weekly episodes
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 148px', gap: 40, alignItems: 'center', marginBottom: 64 }}>
+              <div>
+                <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: MUTED, marginBottom: 16 }}>
+                  Audible Audiobook of the Year 2025
+                </div>
+                <h3 style={{ fontFamily: fSer, fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 400, lineHeight: 1.08, color: INK, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
+                  The first woman in space. Her story changes everything.
+                </h3>
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: MUTED, margin: '0 0 14px', maxWidth: '48ch' }}>
+                  Atmosphere by Taylor Jenkins Reid, narrated by Kristen DiMercurio & Julia Whelan. Audible's most awarded audiobook of 2025.
+                </p>
+                <div style={{ fontFamily: fMono, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED, marginBottom: 10 }}>
+                  Fiction&nbsp;·&nbsp;14h 2m
+                </div>
+                <PlatformChips platforms={['Audible', 'Spotify']} />
+                <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 700, padding: '10px 22px', borderRadius: 999, background: INK, color: BG, border: 'none', cursor: 'pointer', marginTop: 18 }}>
+                  Listen on Audible
+                </button>
+              </div>
+              <CoverImg
+                src="https://covers.openlibrary.org/b/isbn/0593448553-L.jpg"
+                alt="Atmosphere"
+                style={{ width: '100%', aspectRatio: '2/3', objectFit: 'cover', borderRadius: 10 }}
+              />
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 700, padding: '10px 20px', borderRadius: 999, background: INK, color: BG, border: 'none', cursor: 'pointer' }}>
-                Play podcast
-              </button>
-              <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 500, padding: '10px 20px', borderRadius: 999, background: 'transparent', color: INK, border: `1.5px solid ${INK}`, cursor: 'pointer' }}>
-                Subscribe
-              </button>
-            </div>
-          </div>
-          <img
-            src="https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/b1/49/70/b149707b-416e-a9e9-d054-34591c915424/mza_10163662345082686528.jpeg/600x600bb.jpg"
-            alt="Design Better"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
-
-        {/* ── 02 / Book of the week ────────────────────────────────────────── */}
-        <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTED, marginBottom: 16 }}>
-          02&nbsp;/&nbsp;Book of the week
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 148px', gap: 40, alignItems: 'center', marginBottom: 64 }}>
-          <div>
-            <h3 style={{ fontFamily: fSer, fontSize: 'clamp(26px,3.5vw,42px)', fontWeight: 400, lineHeight: 1.08, color: INK, margin: '0 0 14px', letterSpacing: '-0.01em' }}>
-              Small habits. Remarkable possibilities.
-            </h3>
-            <p style={{ fontSize: 13, lineHeight: 1.65, color: MUTED, margin: '0 0 14px', maxWidth: '48ch' }}>
-              Atomic Habits by James Clear. A practical, quietly powerful guide to getting a little better, every day.
-            </p>
-            <div style={{ fontFamily: fMono, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: MUTED, marginBottom: 22 }}>
-              Self-Development&nbsp;·&nbsp;5h 35min
-            </div>
-            <button style={{ fontFamily: fSans, fontSize: 12, fontWeight: 700, padding: '10px 22px', borderRadius: 999, background: INK, color: BG, border: 'none', cursor: 'pointer' }}>
-              Listen on Audible
-            </button>
-          </div>
-          <img
-            src="https://covers.openlibrary.org/b/isbn/9780735211292-L.jpg"
-            alt="Atomic Habits"
-            style={{ width: '100%', aspectRatio: '2/3', objectFit: 'cover', borderRadius: 10 }}
-          />
-        </div>
-
+          </>
+        )}
       </div>
 
-      {/* ── Dark CTA — full bleed ────────────────────────────────────────────── */}
+      {/* ── Dark CTA ─────────────────────────────────────────────────────────── */}
       <div style={{ background: INK, padding: '52px max(24px, env(safe-area-inset-left,0px))' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
           <div>
@@ -242,7 +351,7 @@ export default function Discover() {
         </div>
       </div>
 
-      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      {/* ── Footer ───────────────────────────────────────────────────────────── */}
       <div style={{ background: BG, borderTop: `1px solid ${RULE}`, padding: '20px max(24px, env(safe-area-inset-left,0px))' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
           <span style={{ fontFamily: fSer, fontSize: 17, fontWeight: 400, color: INK }}>MONO.</span>
