@@ -215,8 +215,8 @@ export default function Insights() {
               </Pie>
               <Tooltip
                 formatter={(v) => [`${v}h`, '']}
-                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D4D2CA', borderRadius: 8, fontSize: 12, color: '#1A1E2E' }}
-                itemStyle={{ color: '#1A1E2E' }}
+                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D4D2CA', borderRadius: 8, fontSize: 12, color: '#23003F' }}
+                itemStyle={{ color: '#23003F' }}
                 labelStyle={{ color: '#5C6272' }}
               />
             </PieChart>

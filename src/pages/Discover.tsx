@@ -4,7 +4,7 @@ import { Search } from 'lucide-react';
 
 // ── Design tokens — matching the Framer original exactly ──────────────────────
 const BG    = '#F3EEDA';   // warm cream paper
-const INK   = '#0C1308';   // dark forest-green ink
+const INK   = '#23003F';   // deep purple ink
 const MUTED = '#5C6448';   // muted green-grey
 const RULE  = '#C8C5B0';   // hairline rule colour
 const LAV   = '#9A98CC';   // muted lavender for featured podcast card

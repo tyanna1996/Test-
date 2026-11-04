@@ -51,7 +51,7 @@ export default function TopNav() {
         role="banner"
       >
         <NavLink to="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#1A1E2E', letterSpacing: '-0.02em' }}>
+          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#23003F', letterSpacing: '-0.02em' }}>
             MONO.
           </span>
         </NavLink>
@@ -109,7 +109,7 @@ export default function TopNav() {
                 }}
               >
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #F5F5F5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A' }}>Notifications</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#23003F' }}>Notifications</span>
                   <span style={{ fontSize: 11, color: '#9CA3AF' }}>{unread} unread</span>
                 </div>
                 <ul style={{ maxHeight: 280, overflowY: 'auto', padding: '4px 0' }}>
@@ -124,7 +124,7 @@ export default function TopNav() {
                     >
                       <span style={{ width: 7, height: 7, borderRadius: '50%', background: n.read ? '#E5E7EB' : '#009E7E', flexShrink: 0, marginTop: 5 }} />
                       <div>
-                        <p style={{ fontSize: 12, color: n.read ? '#6B7280' : '#0A0A0A', lineHeight: 1.5 }}>{n.message}</p>
+                        <p style={{ fontSize: 12, color: n.read ? '#6B7280' : '#23003F', lineHeight: 1.5 }}>{n.message}</p>
                         <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{n.time}</p>
                       </div>
                     </li>
