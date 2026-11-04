@@ -367,7 +367,7 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 space-y-6 w-full">
       {/* Heading */}
       <div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 400, lineHeight: 1.1, margin: '0 0 8px' }} className="text-text-primary">

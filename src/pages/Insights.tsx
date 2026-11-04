@@ -148,7 +148,7 @@ export default function Insights() {
   const maxScore = useMemo(() => Math.max(...valueScore.map((v) => v.score)), [valueScore]);
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-6xl">
+    <div className="p-4 sm:p-6 space-y-6 w-full">
       <div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 400, lineHeight: 1.1, margin: '0 0 8px' }} className="text-text-primary">
           Make every listen count.

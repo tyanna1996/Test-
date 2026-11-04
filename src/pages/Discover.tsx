@@ -87,7 +87,7 @@ export default function Discover() {
       </nav>
 
       {/* ── Centred content column ───────────────────────────────────────────── */}
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '0 max(24px, env(safe-area-inset-left,0px))' }}>
+      <div style={{ padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
 
         {/* Subtitle + Search */}
         <div style={{ padding: '28px 0 20px' }}>
@@ -227,7 +227,7 @@ export default function Discover() {
 
       {/* ── Dark CTA — full bleed ────────────────────────────────────────────── */}
       <div style={{ background: INK, padding: '52px max(24px, env(safe-area-inset-left,0px))' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
           <div>
             <h2 style={{ fontFamily: fSer, fontSize: 'clamp(28px,4vw,44px)', fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.01em', color: BG, margin: '0 0 10px' }}>
               Less scrolling. More listening.
@@ -244,7 +244,7 @@ export default function Discover() {
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <div style={{ background: BG, borderTop: `1px solid ${RULE}`, padding: '20px max(24px, env(safe-area-inset-left,0px))' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 max(40px, env(safe-area-inset-left,0px))' }}>
           <span style={{ fontFamily: fSer, fontSize: 17, fontWeight: 400, color: INK }}>MONO.</span>
           <span style={{ fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: MUTED }}>Made for curious ears. © 2026</span>
         </div>
