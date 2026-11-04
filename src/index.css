@@ -3,51 +3,52 @@
 @import "tailwindcss";
 
 @theme {
-  /* Backgrounds */
-  --color-bg-primary: #0f1117;
-  --color-bg-secondary: #161b27;
-  --color-bg-card: #1a2035;
-  --color-bg-hover: #1e2640;
-  --color-bg-elevated: #212840;
+  /* Backgrounds — cream paper palette */
+  --color-bg-primary: #F6F4ED;
+  --color-bg-secondary: #EFEDE6;
+  --color-bg-card: #FFFFFF;
+  --color-bg-hover: #EEECE5;
+  --color-bg-elevated: #E8E6DE;
 
   /* Borders */
-  --color-border: #252d42;
-  --color-border-subtle: #1e2640;
+  --color-border: #D4D2CA;
+  --color-border-subtle: #E0DED6;
 
   /* Brand — teal */
-  --color-teal: #00d4aa;
-  --color-teal-hover: #00bfa0;
-  --color-teal-dim: #00d4aa1a;
-  --color-teal-dim-hover: #00d4aa26;
+  --color-teal: #009E7E;
+  --color-teal-hover: #008A6E;
+  --color-teal-dim: #009E7E18;
+  --color-teal-dim-hover: #009E7E28;
 
   /* Text */
-  --color-text-primary: #e8eaf0;
-  --color-text-secondary: #8892a4;
-  --color-text-muted: #4a5568;
+  --color-text-primary: #1A1E2E;
+  --color-text-secondary: #5C6272;
+  --color-text-muted: #8C94A6;
 
   /* Semantic — status / accent colours */
-  --color-amber: #f59e0b;
-  --color-amber-dim: #f59e0b1a;
-  --color-danger: #ef4444;
-  --color-danger-dim: #ef44441a;
-  --color-green: #22c55e;
-  --color-green-dim: #22c55e1a;
-  --color-purple: #8b5cf6;
-  --color-purple-dim: #8b5cf61a;
-  --color-blue: #3b82f6;
-  --color-blue-dim: #3b82f61a;
-  --color-cyan: #06b6d4;
-  --color-orange: #f97316;
+  --color-amber: #d97706;
+  --color-amber-dim: #d9770614;
+  --color-danger: #dc2626;
+  --color-danger-dim: #dc262614;
+  --color-green: #16a34a;
+  --color-green-dim: #16a34a14;
+  --color-purple: #7c3aed;
+  --color-purple-dim: #7c3aed14;
+  --color-blue: #2563eb;
+  --color-blue-dim: #2563eb14;
+  --color-cyan: #0891b2;
+  --color-orange: #ea580c;
 
   /* Service accent colours */
-  --color-audible: #f59e0b;
-  --color-storytel: #8b5cf6;
-  --color-podimo: #ef4444;
-  --color-spotify: #22c55e;
+  --color-audible: #d97706;
+  --color-storytel: #7c3aed;
+  --color-podimo: #dc2626;
+  --color-spotify: #16a34a;
 
   /* Typography */
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
+  --font-serif: 'DM Serif Display', Georgia, serif;
 }
 
 /* ── Base reset ───────────────────────────── */

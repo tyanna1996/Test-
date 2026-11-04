@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DollarSign, Clock, Layers, AlertTriangle, Calendar } from 'lucide-react';
+import { DollarSign, Clock, Layers, Calendar } from 'lucide-react';
 import {
   AreaChart, Area,
   BarChart, Bar, Cell,
@@ -109,6 +109,65 @@ function ServiceGridCard({ service, onClick }: { service: Service; onClick: () =
         </div>
       </div>
     </button>
+  );
+}
+
+/* ── Attention feed ───────────────────────────────────── */
+const ATTENTION_ALERTS = [
+  {
+    id: 'trial',
+    title: 'Trial ends in 3 days',
+    body: 'Podimo charges $8.99 on Apr 30. Review before your first payment.',
+    action: 'Review trial',
+    color: '#d97706',
+  },
+  {
+    id: 'usage',
+    title: 'Used less this week',
+    body: 'Storytel 3h, down from 4h last week. Is it still worth keeping?',
+    action: 'See usage',
+    color: '#7c3aed',
+  },
+  {
+    id: 'payment',
+    title: 'Next payment: May 2',
+    body: 'Audible renews at $14.95. Your plan stays active unless you cancel.',
+    action: 'Manage subscription',
+    color: '#5C6272',
+  },
+];
+
+function AttentionFeed({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-border">
+        <h2 className="text-sm font-semibold text-text-primary">Needs your attention</h2>
+      </div>
+      <div>
+        {ATTENTION_ALERTS.map((a, i) => (
+          <div
+            key={a.id}
+            className={`flex items-start gap-4 px-5 py-4${i < ATTENTION_ALERTS.length - 1 ? ' border-b border-border' : ''}`}
+          >
+            <span
+              aria-hidden="true"
+              style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0, marginTop: 5 }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-text-primary">{a.title}</p>
+              <p className="text-xs text-text-secondary mt-0.5 leading-relaxed">{a.body}</p>
+            </div>
+            <button
+              onClick={onClick}
+              className="flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg whitespace-nowrap"
+              style={{ background: a.color + '18', color: a.color }}
+            >
+              {a.action}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -281,7 +340,7 @@ function RenewalTimeline() {
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const { totalMonthly, totalMonthlyHours, activeCount, upcomingCount, trialService } =
+  const { totalMonthly, totalMonthlyHours, activeCount, upcomingCount } =
     useMemo(() => {
       const now = Date.now();
       const in14 = now + 14 * 86_400_000;
@@ -299,7 +358,6 @@ export default function Dashboard() {
           const t = new Date(s.nextBillingDate + 'T00:00:00').getTime();
           return t >= now && t <= in14;
         }).length,
-        trialService: services.find((s) => s.status === 'trial'),
       };
     }, []);
 
@@ -312,32 +370,17 @@ export default function Dashboard() {
     <div className="p-4 sm:p-6 space-y-6 max-w-6xl">
       {/* Heading */}
       <div>
-        <h1 className="text-xl font-semibold text-text-primary">Good morning, Jamie</h1>
-        <p className="text-sm mt-0.5 text-text-secondary">
-          Here's your audio subscription overview for April 2026.
-        </p>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 400, lineHeight: 1.1, margin: '0 0 8px' }} className="text-text-primary">
+          Your subscriptions, at a glance
+        </h1>
+        <p className="text-sm text-text-secondary">Know what's coming up. Keep what feels worth it.</p>
+        <span className="inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full bg-bg-elevated text-text-secondary">
+          Apr 27, 2026
+        </span>
       </div>
 
-      {/* Trial warning */}
-      {trialService && (
-        <div
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm bg-amber-dim border border-amber/25"
-          role="alert"
-        >
-          <AlertTriangle size={15} className="text-amber flex-shrink-0" aria-hidden="true" />
-          <p className="text-text-primary">
-            <span className="text-amber font-semibold">Podimo trial</span> expires on Apr 30 —
-            you'll be charged{' '}
-            <span className="font-mono">${trialService.monthlyCost}/mo</span> if you don't cancel.
-          </p>
-          <button
-            onClick={() => navigate('/subscriptions')}
-            className="ml-auto flex-shrink-0 text-xs font-medium px-3 py-1.5 rounded-lg bg-amber/15 text-amber hover:bg-amber/25"
-          >
-            Review
-          </button>
-        </div>
-      )}
+      {/* Attention feed */}
+      <AttentionFeed onClick={() => navigate('/subscriptions')} />
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -384,7 +427,7 @@ export default function Dashboard() {
                   <stop offset="95%" stopColor="#00d4aa" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0DDD5" vertical={false} />
               <XAxis
                 dataKey="month"
                 tick={{ fill: '#8892a4', fontSize: 11 }}
@@ -417,7 +460,7 @@ export default function Dashboard() {
         <ChartCard title="Weekly Usage" sub="Hours per platform">
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={usageBarData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0DDD5" vertical={false} />
               <XAxis
                 dataKey="name"
                 tick={{ fill: '#8892a4', fontSize: 10 }}

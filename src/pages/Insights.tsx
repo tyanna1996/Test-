@@ -45,6 +45,59 @@ const monthlyListeningTrend = [
   { month: 'Apr', hours: 103 },
 ];
 
+/* ── Editorial insight callout ─────────────────────────── */
+function InsightCallout({
+  bestValue,
+}: {
+  bestValue: { name: string; score: number; color: string };
+}) {
+  const svc = services.find((s) => s.name === bestValue.name);
+  if (!svc) return null;
+  const monthlyHours = +(svc.weeklyUsageHours * 4.33).toFixed(1);
+  const costPerHr    = (svc.monthlyCost / monthlyHours).toFixed(2);
+  const others       = services.filter((s) => s.id !== svc.id).slice(0, 2);
+
+  return (
+    <div
+      className="card p-6"
+      style={{ background: bestValue.color + '0D', borderColor: bestValue.color + '30' }}
+    >
+      <p className="text-xs font-medium uppercase tracking-wider text-text-muted mb-3">
+        Top insight · Apr 20–26
+      </p>
+      <h2
+        style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 26,
+          fontWeight: 400,
+          lineHeight: 1.2,
+          margin: '0 0 12px',
+          color: 'var(--color-text-primary)',
+        }}
+      >
+        {svc.name} gave you the most listening for your money.
+      </h2>
+      <p className="text-sm text-text-secondary leading-relaxed">
+        {monthlyHours}h estimated monthly hours for ${svc.monthlyCost} — about ${costPerHr} per
+        hour. Compare with:{' '}
+        {others.map((o, i) => {
+          const h = +(o.weeklyUsageHours * 4.33).toFixed(1);
+          const c = (o.monthlyCost / h).toFixed(2);
+          return (
+            <span key={o.id}>
+              {o.name} at ${c}
+              {i < others.length - 1 ? ' and ' : '.'}
+            </span>
+          );
+        })}
+      </p>
+      <p className="text-xs text-text-muted mt-2">
+        An estimate, not a measure of how much you enjoy a service.
+      </p>
+    </div>
+  );
+}
+
 /* ── Tooltip ───────────────────────────────────────────── */
 function ChartTooltip({ active, payload, label, unit = '' }: any) {
   if (!active || !payload?.length) return null;
@@ -97,11 +150,17 @@ export default function Insights() {
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-6xl">
       <div>
-        <h1 className="text-xl font-semibold text-text-primary">Usage & Insights</h1>
-        <p className="text-sm mt-0.5 text-text-secondary">
-          Understand your listening habits and subscription value.
-        </p>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 400, lineHeight: 1.1, margin: '0 0 8px' }} className="text-text-primary">
+          Make every listen count.
+        </h1>
+        <p className="text-sm text-text-secondary">Explore the numbers when you need them.</p>
+        <span className="inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full bg-bg-elevated text-text-secondary">
+          Apr 20–26
+        </span>
       </div>
+
+      {/* Editorial callout */}
+      <InsightCallout bestValue={bestValue} />
 
       {/* KPI row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -126,7 +185,7 @@ export default function Insights() {
         <ChartCard title="Daily Listening Breakdown" sub="This week — hours per platform">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={combinedDailyData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0DDD5" vertical={false} />
               <XAxis dataKey="day" tick={{ fill: '#8892a4', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
               <Tooltip content={<ChartTooltip unit="h" />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
@@ -156,9 +215,9 @@ export default function Insights() {
               </Pie>
               <Tooltip
                 formatter={(v) => [`${v}h`, '']}
-                contentStyle={{ backgroundColor: '#1a2035', border: '1px solid #252d42', borderRadius: 8, fontSize: 12, color: '#e8eaf0' }}
-                itemStyle={{ color: '#e8eaf0' }}
-                labelStyle={{ color: '#8892a4' }}
+                contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #D4D2CA', borderRadius: 8, fontSize: 12, color: '#1A1E2E' }}
+                itemStyle={{ color: '#1A1E2E' }}
+                labelStyle={{ color: '#5C6272' }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -179,7 +238,7 @@ export default function Insights() {
         <ChartCard title="Value Score" sub="Weekly hours per dollar spent">
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={valueScore} layout="vertical" margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#252d42" horizontal={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E0DDD5" horizontal={false} />
               <XAxis type="number" tick={{ fill: '#8892a4', fontSize: 10, fontFamily: 'DM Mono, monospace' }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fill: '#8892a4', fontSize: 10 }} axisLine={false} tickLine={false} width={55} />
               <Tooltip content={<ChartTooltip unit=" hrs/$" />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
