@@ -43,14 +43,14 @@ const CATEGORIES = ['True Crime', 'News', 'Business', 'Technology', 'History', '
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  bg:      '#C4F2A4',
-  surface: '#FFFFFF',
-  fg:      '#080F04',
-  muted:   '#526548',
-  accent:  '#0A0AFF',
-  warm:    '#FF2D87',
-  border:  'rgba(8,15,4,0.12)',
-  borderSoft: 'rgba(8,15,4,0.07)',
+  bg:        '#F6F4ED',
+  surface:   '#FFFFFF',
+  fg:        '#1A1E2E',
+  muted:     '#5C6272',
+  accent:    '#009E7E',
+  warm:      '#009E7E',
+  border:    '#D4D2CA',
+  borderSoft:'#E0DED6',
 } as const;
 
 const fDisplay = "'DM Serif Display', Georgia, serif";
@@ -190,32 +190,30 @@ function OnboardingModal({ initialSubs, onComplete, onSkip, isEdit }: {
   const toggle = (id: string) => setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   return (
-    <div className="mono-fade-in" style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#0C1508', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', overflowY: 'auto' }}>
+    <div className="mono-fade-in" style={{ position: 'fixed', inset: 0, zIndex: 100, background: C.fg, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', overflowY: 'auto' }}>
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div style={{ marginBottom: 32, textAlign: 'center' }}>
-          <span style={{ fontFamily: fSans, fontSize: 28, fontWeight: 900, letterSpacing: '-0.06em', color: C.bg }}>
-            MO<span style={{ color: C.accent }}>N</span>O
-          </span>
+          <span style={{ fontFamily: fDisplay, fontSize: 36, fontWeight: 400, color: C.bg, letterSpacing: '-0.02em' }}>MONO.</span>
         </div>
         <h1 style={{ fontFamily: fDisplay, fontSize: 28, fontWeight: 400, color: C.bg, textAlign: 'center', marginBottom: 8 }}>
           {isEdit ? 'Update your services' : 'Stream smarter,\nnot harder'}
         </h1>
-        <p style={{ fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: 'rgba(196,242,164,0.5)', textAlign: 'center', marginBottom: 32, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: fMono, fontSize: 10, letterSpacing: '0.08em', color: 'rgba(246,244,237,0.45)', textAlign: 'center', marginBottom: 32, lineHeight: 1.6 }}>
           {isEdit ? 'TOGGLE THE SERVICES YOU CURRENTLY PAY FOR' : "WHICH SERVICES DO YOU PAY FOR? WE'LL SHOW WHAT'S FREE FOR YOU"}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
           {PLAT_ORDER.map(id => {
             const p = SVC[id]; const isOn = selected.has(id);
             return (
-              <button key={id} onClick={() => toggle(id)} style={{ padding: '16px 14px', borderRadius: 18, textAlign: 'left', cursor: 'pointer', fontFamily: fSans, border: `2px solid ${isOn ? p.color : 'rgba(196,242,164,0.12)'}`, background: isOn ? p.color + '18' : 'rgba(196,242,164,0.04)', transition: 'all 200ms' }}>
+              <button key={id} onClick={() => toggle(id)} style={{ padding: '16px 14px', borderRadius: 18, textAlign: 'left', cursor: 'pointer', fontFamily: fSans, border: `2px solid ${isOn ? p.color : 'rgba(246,244,237,0.1)'}`, background: isOn ? p.color + '18' : 'rgba(246,244,237,0.04)', transition: 'all 200ms' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 800, color: isOn ? p.color : C.bg }}>{p.name}</span>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, background: isOn ? p.color : 'rgba(196,242,164,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, background: isOn ? p.color : 'rgba(246,244,237,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isOn && <Check size={11} style={{ color: '#FFF' }} />}
                   </div>
                 </div>
-                <p style={{ fontSize: 10, color: 'rgba(196,242,164,0.35)', marginBottom: 6, lineHeight: 1.4 }}>{p.desc}</p>
-                <p style={{ fontSize: 11, fontWeight: 700, color: isOn ? p.color : 'rgba(196,242,164,0.2)' }}>{p.price}</p>
+                <p style={{ fontSize: 10, color: 'rgba(246,244,237,0.35)', marginBottom: 6, lineHeight: 1.4 }}>{p.desc}</p>
+                <p style={{ fontSize: 11, fontWeight: 700, color: isOn ? p.color : 'rgba(246,244,237,0.2)' }}>{p.price}</p>
               </button>
             );
           })}
@@ -223,7 +221,7 @@ function OnboardingModal({ initialSubs, onComplete, onSkip, isEdit }: {
         <button onClick={() => onComplete([...selected])} style={{ width: '100%', padding: '14px 32px', borderRadius: 999, fontSize: 14, fontWeight: 800, background: C.bg, color: C.fg, border: 'none', cursor: 'pointer', fontFamily: fSans, marginBottom: 12 }}>
           {selected.size > 0 ? `${isEdit ? 'Save' : 'Get started'} — ${selected.size} service${selected.size > 1 ? 's' : ''}` : isEdit ? 'Save' : 'Continue without services'}
         </button>
-        {!isEdit && <button onClick={onSkip} style={{ display: 'block', margin: '0 auto', fontSize: 11, fontFamily: fMono, letterSpacing: '0.1em', color: 'rgba(196,242,164,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>SKIP FOR NOW</button>}
+        {!isEdit && <button onClick={onSkip} style={{ display: 'block', margin: '0 auto', fontSize: 11, fontFamily: fMono, letterSpacing: '0.1em', color: 'rgba(246,244,237,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>SKIP FOR NOW</button>}
       </div>
     </div>
   );
@@ -516,6 +514,19 @@ export default function Discover() {
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 20px' }}>
 
+        {/* Editorial masthead */}
+        <div style={{ padding: '32px 0 22px', borderBottom: `1.5px solid ${C.fg}` }}>
+          <div style={{ fontFamily: fMono, fontSize: 9, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.muted, marginBottom: 20 }}>
+            The Listening Room&nbsp;&nbsp;/&nbsp;&nbsp;Vol. 001
+          </div>
+          <h1 style={{ fontFamily: fDisplay, fontSize: 'clamp(44px,8vw,80px)', fontWeight: 400, lineHeight: 1.04, margin: '0 0 14px', textWrap: 'balance', color: C.fg, letterSpacing: '-0.02em' }}>
+            Open ears. Open worlds.
+          </h1>
+          <p style={{ fontSize: 14, lineHeight: 1.65, color: C.muted, margin: 0, maxWidth: '52ch' }}>
+            Podcasts to get lost in. Books to live a little more. All your listening, in good company.
+          </p>
+        </div>
+
         {/* Search */}
         <div style={{ paddingBlock: 20, borderBottom: `1.5px solid ${C.border}` }}>
           <div style={{ position: 'relative' }}>
@@ -578,10 +589,10 @@ export default function Discover() {
         {/* CTA */}
         <div style={{ background: C.fg, borderRadius: 20, padding: '22px 20px', margin: '24px 0 36px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontFamily: fDisplay, fontSize: 18, fontWeight: 400, color: C.bg, lineHeight: 1.2, marginBottom: 4 }}>Connect your services, see what's already free</div>
-            <div style={{ fontFamily: fMono, fontSize: 8, letterSpacing: '0.1em', color: 'rgba(196,242,164,0.45)', textTransform: 'uppercase' }}>Audible · Storytel · Podimo · Spotify</div>
+            <div style={{ fontFamily: fDisplay, fontSize: 18, fontWeight: 400, color: '#F6F4ED', lineHeight: 1.2, marginBottom: 4 }}>Connect your services, see what's already free</div>
+            <div style={{ fontFamily: fMono, fontSize: 8, letterSpacing: '0.1em', color: 'rgba(246,244,237,0.4)', textTransform: 'uppercase' }}>Audible · Storytel · Podimo · Spotify</div>
           </div>
-          <button onClick={() => setEditingSubs(true)} style={{ fontFamily: fSans, fontSize: 12, fontWeight: 800, padding: '10px 20px', borderRadius: 999, background: C.bg, color: C.fg, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+          <button onClick={() => setEditingSubs(true)} style={{ fontFamily: fSans, fontSize: 12, fontWeight: 800, padding: '10px 20px', borderRadius: 999, background: '#F6F4ED', color: C.fg, border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             {userSubs.size > 0 ? 'Update services' : 'Get started'}
           </button>
         </div>
