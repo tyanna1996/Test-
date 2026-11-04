@@ -4,10 +4,10 @@ import { Bell, Menu, X } from 'lucide-react';
 import { notifications } from '../../data/services';
 
 const NAV_ITEMS = [
-  { to: '/',              label: 'Discover',        end: true },
-  { to: '/dashboard',     label: 'Dashboard',       end: false },
-  { to: '/subscriptions', label: 'My Subscriptions', end: false },
-  { to: '/insights',      label: 'Insights',        end: false },
+  { to: '/',              label: '← Discover',       end: true  },
+  { to: '/dashboard',     label: 'Dashboard',        end: false },
+  { to: '/subscriptions', label: 'Subscriptions',    end: false },
+  { to: '/insights',      label: 'Insights',         end: false },
 ];
 
 export default function TopNav() {
@@ -28,12 +28,12 @@ export default function TopNav() {
 
   const linkStyle = (isActive: boolean) => ({
     fontSize: 13,
-    fontWeight: isActive ? 700 : 500,
-    color: isActive ? '#0A0AFF' : '#6B7280',
+    fontWeight: isActive ? 600 : 400,
+    color: isActive ? '#009E7E' : '#5C6272',
     textDecoration: 'none',
     padding: '6px 14px',
     borderRadius: 999,
-    background: isActive ? '#E8E8FF' : 'transparent',
+    background: isActive ? '#009E7E14' : 'transparent',
     transition: 'all 150ms',
     whiteSpace: 'nowrap' as const,
   });
@@ -51,8 +51,8 @@ export default function TopNav() {
         role="banner"
       >
         <NavLink to="/" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <span style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.06em', color: '#0A0A0A' }}>
-            MO<span style={{ color: '#0A0AFF' }}>N</span>O
+          <span style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 22, fontWeight: 400, color: '#1A1E2E', letterSpacing: '-0.02em' }}>
+            MONO.
           </span>
         </NavLink>
 
@@ -91,7 +91,7 @@ export default function TopNav() {
                   style={{
                     position: 'absolute', top: 7, right: 7,
                     width: 7, height: 7, borderRadius: '50%',
-                    background: '#0A0AFF', border: '1.5px solid #FFF',
+                    background: '#009E7E', border: '1.5px solid #FFF',
                   }}
                 />
               )}
@@ -122,7 +122,7 @@ export default function TopNav() {
                         cursor: 'pointer',
                       }}
                     >
-                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: n.read ? '#E5E7EB' : '#0A0AFF', flexShrink: 0, marginTop: 5 }} />
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: n.read ? '#E5E7EB' : '#009E7E', flexShrink: 0, marginTop: 5 }} />
                       <div>
                         <p style={{ fontSize: 12, color: n.read ? '#6B7280' : '#0A0A0A', lineHeight: 1.5 }}>{n.message}</p>
                         <p style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>{n.time}</p>
@@ -137,7 +137,7 @@ export default function TopNav() {
           <div
             style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #0A0AFF, #6200EE)',
+              background: 'linear-gradient(135deg, #009E7E, #007A62)',
               color: '#FFF', fontSize: 11, fontWeight: 700,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', userSelect: 'none',

@@ -9,8 +9,10 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
+        {/* Discover is a standalone editorial page — it has its own dark nav */}
+        <Route index element={<Discover />} />
+        {/* App pages share the top nav layout */}
         <Route element={<Layout />}>
-          <Route index element={<Discover />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="subscriptions" element={<Subscriptions />} />
           <Route path="insights" element={<Insights />} />
