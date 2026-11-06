@@ -1,7 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { PODCASTS, AUDIOBOOKS, PLATFORM_COLORS } from '../data/content';
+import { fetchPodcasts, fetchAudiobooks } from '../lib/api';
+import { PLATFORM_COLORS } from '../data/content';
 import type { Podcast, Audiobook } from '../data/content';
 
 const BG    = '#F3EEDA';
@@ -77,25 +78,23 @@ export default function Discover() {
     });
   }, []);
 
-  const filteredPods: Podcast[] = useMemo(() => {
-    let list = PODCASTS;
-    if (podCat !== 'All') list = list.filter(p => p.category === podCat);
-    if (q.trim()) {
-      const lq = q.toLowerCase();
-      list = list.filter(p => p.title.toLowerCase().includes(lq) || p.author.toLowerCase().includes(lq));
-    }
-    return list;
-  }, [podCat, q]);
+  const [pods,  setPods]  = useState<Podcast[]>([]);
+  const [books, setBooks] = useState<Audiobook[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredBooks: Audiobook[] = useMemo(() => {
-    let list = AUDIOBOOKS;
-    if (bookCat !== 'All') list = list.filter(b => b.category === bookCat);
-    if (q.trim()) {
-      const lq = q.toLowerCase();
-      list = list.filter(b => b.title.toLowerCase().includes(lq) || b.author.toLowerCase().includes(lq));
-    }
-    return list;
-  }, [bookCat, q]);
+  useEffect(() => {
+    setLoading(true);
+    const catP  = podCat  !== 'All' ? podCat  : undefined;
+    const catB  = bookCat !== 'All' ? bookCat : undefined;
+    const qTrim = q.trim() || undefined;
+    Promise.all([
+      fetchPodcasts({ q: qTrim, category: catP }),
+      fetchAudiobooks({ q: qTrim, category: catB }),
+    ]).then(([p, b]) => { setPods(p); setBooks(b); }).finally(() => setLoading(false));
+  }, [q, podCat, bookCat]);
+
+  const filteredPods  = pods;
+  const filteredBooks = books;
 
   const showPods  = navTab === 'Discover' || navTab === 'Podcasts';
   const showBooks = navTab === 'Discover' || navTab === 'Audiobooks';
@@ -183,7 +182,9 @@ export default function Discover() {
             </div>
 
             {/* 3-column podcast grid */}
-            {filteredPods.length > 0 ? (
+            {loading ? (
+              <div style={{ padding: '32px 0 52px', color: MUTED, fontFamily: fMono, fontSize: 11, letterSpacing: '0.08em' }}>Loading…</div>
+            ) : filteredPods.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: `1.5px solid ${RULE}`, borderRadius: 14, overflow: 'hidden', marginBottom: navTab === 'Discover' ? 52 : 64 }}>
                 {filteredPods.map((pod, i) => {
                   const cols = 3;
@@ -234,7 +235,9 @@ export default function Discover() {
               ))}
             </div>
 
-            {filteredBooks.length > 0 ? (
+            {loading ? (
+              <div style={{ padding: '32px 0 64px', color: MUTED, fontFamily: fMono, fontSize: 11, letterSpacing: '0.08em' }}>Loading…</div>
+            ) : filteredBooks.length > 0 ? (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, marginBottom: 64 }}>
                 {filteredBooks.map(book => {
                   const bs = BADGE_STYLE[book.badge] ?? BADGE_STYLE.FREE;
